@@ -4,6 +4,11 @@ import "./globals.css";
 import { Providers } from "./providers";
 import WalletErrorHandler from "../components/WalletErrorHandler";
 
+// Polyfill global for FHEVM SDK
+if (typeof global === 'undefined') {
+  (window as any).global = globalThis;
+}
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
