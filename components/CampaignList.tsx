@@ -138,13 +138,16 @@ export default function CampaignList() {
       const fheAmount = Math.min(255, Math.max(1, Math.floor(usdValue / 100)));
       const campaignId = BigInt(selectedCampaign.id);
 
+      // Convert fheAmount to bytes32 format for contract
+      const fheAmountHex = `0x${fheAmount.toString(16).padStart(64, '0')}` as `0x${string}`;
+
       // Convert to wei for ETH transfer
       const weiAmount = donationCurrency === "ETH" 
         ? BigInt(Math.floor(amount * 10**18))
         : BigInt(Math.floor(usdValue * 10**18 / ethPrice)); // Convert USD to ETH
 
       await makeDonation({
-        args: [campaignId, fheAmount],
+        args: [campaignId, fheAmountHex],
         value: weiAmount,
       });
 

@@ -31,10 +31,13 @@ export default function DonationForm() {
       const amount = Math.min(255, Math.max(1, parseInt(formData.amount) / 100)); // Scale down to fit euint8
       const campaignId = BigInt(parseInt(formData.campaignId));
 
+      // Convert amount to bytes32 format for contract
+      const amountHex = `0x${amount.toString(16).padStart(64, '0')}` as `0x${string}`;
+
       await write({
         args: [
           campaignId,
-          amount, // This will be encrypted as euint8 in the contract
+          amountHex, // This will be encrypted as euint8 in the contract
         ],
         value: BigInt(parseInt(formData.amount) * 10**18), // Convert to wei for actual ETH transfer
       });

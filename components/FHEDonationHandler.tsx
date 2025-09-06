@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAccount } from "wagmi";
-import { createInstance } from "@fhevm/sdk";
+// Dynamic import will be used instead of static import
 import { CHARITY_NEXUS_ADDRESS } from "../lib/contracts";
 
 interface FHEDonationHandlerProps {
@@ -30,14 +30,20 @@ export default function FHEDonationHandler({
     setIsProcessing(true);
 
     try {
+      // Dynamic import FHEVM SDK
+      const { initSDK, createInstance, SepoliaConfig } = await import("@zama-fhe/relayer-sdk/bundle");
+      
+      // Initialize FHEVM SDK
+      await initSDK();
+      
       // Create FHEVM instance
-      const fhevm = await createInstance({
-        chainId: 11155111, // Sepolia
-        publicKey: {
-          name: "FHEVM",
-          version: "1.0.0",
-        },
-      });
+      const config = { 
+        ...SepoliaConfig, 
+        network: (window as any).ethereum,
+        chainId: 11155111,
+        gatewayChainId: 11155111,
+      };
+      const fhevm = await createInstance(config);
 
       // Create encrypted input
       const encryptedInput = await fhevm
@@ -46,7 +52,7 @@ export default function FHEDonationHandler({
         .encrypt();
 
       // Get the encrypted data and proof
-      const { data: encryptedData, proof } = encryptedInput;
+      const encryptedData = encryptedInput.handles[0];
 
       // Call the contract with encrypted data
       // This would be called from the parent component

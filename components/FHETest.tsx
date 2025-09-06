@@ -140,8 +140,7 @@ export default function FHETest() {
         // Add explicit configuration for Sepolia
         chainId: 11155111,
         gatewayChainId: 11155111,
-        // Add relayer URL for proper coprocessor communication
-        relayerUrl: "https://api.zama.ai/relayer",
+        // Remove relayerUrl to use default configuration
       };
       const fhevm = await (window as any).createInstance(config);
 

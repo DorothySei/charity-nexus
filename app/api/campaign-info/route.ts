@@ -85,7 +85,10 @@ export async function POST(request: NextRequest) {
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 
     // Get campaign info from contract
-    const campaignInfo = await contract.getCampaignInfo(campaignId);
+    if (!contract['getCampaignInfo']) {
+      return NextResponse.json({ error: 'Contract method not available' }, { status: 500 });
+    }
+    const campaignInfo = await contract['getCampaignInfo'](campaignId);
 
     // Parse the response
     const result = {
