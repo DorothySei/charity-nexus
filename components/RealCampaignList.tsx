@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAccount, useContractRead, useContractWrite } from "wagmi";
 import { CHARITY_NEXUS_ADDRESS, CHARITY_NEXUS_ABI } from "../lib/contracts";
-import { createInstance } from "@fhevm/sdk/web";
+import { initSDK, createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/bundle";
 
 export default function RealCampaignList() {
   const { address } = useAccount();
@@ -185,16 +185,12 @@ export default function RealCampaignList() {
         ? BigInt(Math.floor(amount * 10**18))
         : BigInt(Math.floor(usdValue * 10**18 / ethPrice));
 
-      // Create encrypted data using FHEVM SDK
-      const fhevm = await createInstance({
-        verifyingContractAddress: "0xbc91f3daD1A5F19F8390c400196e58073B6a0BC4", // Sepolia InputVerifier
-        kmsContractAddress: "0x1364cBBf2cDF5032C47d8226a6f6FBD2AFCDacAC", // Sepolia KMS
-        aclContractAddress: "0x687820221192C5B662b25367F70076A37bc79b6c", // Sepolia ACL
-        gatewayChainId: 11155111, // Sepolia
-        chainId: 11155111,
-        network: window.ethereum, // Use browser provider
-        // Remove relayerUrl to avoid CORS issues
-      });
+      // Initialize FHEVM SDK
+      await initSDK(); // Loads WASM
+      
+      // Create FHEVM instance using SepoliaConfig
+      const config = { ...SepoliaConfig, network: (window as any).ethereum };
+      const fhevm = await createInstance(config);
 
       // Create encrypted input
       const encryptedInput = await fhevm
@@ -203,10 +199,14 @@ export default function RealCampaignList() {
         .encrypt();
 
       // Get the encrypted data (bytes32 format)
-      const encryptedData = encryptedInput.data;
+      const encryptedData = encryptedInput.handles[0];
+      if (!encryptedData) {
+        throw new Error("Failed to create encrypted data");
+      }
+      const encryptedDataHex = `0x${Array.from(encryptedData).map(b => b.toString(16).padStart(2, '0')).join('')}` as `0x${string}`;
 
       await makeDonation({
-        args: [campaignId, encryptedData],
+        args: [campaignId, encryptedDataHex],
         value: weiAmount,
       });
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAccount } from "wagmi";
-import { createInstance } from "@fhevm/sdk/web";
+import { initSDK, createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/bundle";
 import { CHARITY_NEXUS_ADDRESS } from "../lib/contracts";
 
 export default function FHETest() {
@@ -20,16 +20,12 @@ export default function FHETest() {
     setTestResult("Testing FHEVM SDK...");
 
     try {
-      // Create FHEVM instance
-      const fhevm = await createInstance({
-        verifyingContractAddress: "0xbc91f3daD1A5F19F8390c400196e58073B6a0BC4",
-        kmsContractAddress: "0x1364cBBf2cDF5032C47d8226a6f6FBD2AFCDacAC",
-        aclContractAddress: "0x687820221192C5B662b25367F70076A37bc79b6c",
-        gatewayChainId: 11155111,
-        chainId: 11155111,
-        network: window.ethereum,
-        // Remove relayerUrl to avoid CORS issues
-      });
+      // Initialize FHEVM SDK
+      await initSDK(); // Loads WASM
+      
+      // Create FHEVM instance using SepoliaConfig
+      const config = { ...SepoliaConfig, network: (window as any).ethereum };
+      const fhevm = await createInstance(config);
 
       setTestResult("✅ FHEVM instance created successfully!");
 
