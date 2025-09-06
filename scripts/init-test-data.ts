@@ -4,7 +4,7 @@ async function main() {
   console.log("🚀 Initializing test data for Charity Nexus...");
 
   // Get the deployed contract
-  const contractAddress = "0x4630b088E2a6013527Bd9A68aB2c0ceb1a06F18F";
+  const contractAddress = "0x7808874C4A5994e249e0c92D94d67Fd9836e096a";
   const CharityNexus = await ethers.getContractFactory("CharityNexus");
   const charityNexus = CharityNexus.attach(contractAddress);
 

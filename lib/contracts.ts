@@ -1,5 +1,5 @@
 // Contract configuration and ABI
-export const CHARITY_NEXUS_ADDRESS = (process.env['NEXT_PUBLIC_CHARITY_NEXUS_ADDRESS'] || "0x4630b088E2a6013527Bd9A68aB2c0ceb1a06F18F") as `0x${string}`;
+export const CHARITY_NEXUS_ADDRESS = (process.env['NEXT_PUBLIC_CHARITY_NEXUS_ADDRESS'] || "0x7808874C4A5994e249e0c92D94d67Fd9836e096a") as `0x${string}`;
 
 export const CHARITY_NEXUS_ABI = [
   {

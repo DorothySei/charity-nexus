@@ -400,6 +400,13 @@ export default function RealCampaignList() {
       // Submit donation to blockchain
       setDonationStep("Submitting donation to blockchain...");
       
+      // Debug information
+      console.log("🔍 Debug donation parameters:");
+      console.log("  - Campaign ID:", campaignId.toString());
+      console.log("  - Encrypted Data:", encryptedDataHex);
+      console.log("  - Wei Amount:", weiAmount.toString());
+      console.log("  - Contract Address:", CHARITY_NEXUS_ADDRESS);
+      
       // Use writeAsync to get transaction hash
       const txResult = await makeDonation({
         args: [campaignId, encryptedDataHex],
@@ -449,7 +456,29 @@ export default function RealCampaignList() {
       setDonationAmount("");
     } catch (error) {
       console.error("Error making donation:", error);
-      alert("Failed to make donation, please try again");
+      
+      // Provide more detailed error information
+      let errorMessage = "Failed to make donation. Please try again.";
+      
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+        
+        if (error.message.includes("insufficient funds")) {
+          errorMessage = "Insufficient funds for donation. Please check your wallet balance.";
+        } else if (error.message.includes("user rejected")) {
+          errorMessage = "Transaction was rejected. Please try again.";
+        } else if (error.message.includes("network")) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else if (error.message.includes("gas")) {
+          errorMessage = "Gas estimation failed. Please try again.";
+        }
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsDonating(false);
       setDonationStep("");

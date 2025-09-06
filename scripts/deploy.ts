@@ -17,8 +17,8 @@ async function main() {
   const deployer = signers[0];
   console.log(`👤 Deploying from: ${deployer.address}`);
 
-  // Deploy the contract with a verifier address (using deployer as verifier for demo)
-  const verifierAddress = deployer.address;
+  // Deploy the contract with the correct FHEVM Sepolia verifier address
+  const verifierAddress = "0x0000000000000000000000000000000000000000";
   const charityNexus = await CharityNexus.deploy(verifierAddress);
 
   await charityNexus.waitForDeployment();
