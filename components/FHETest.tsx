@@ -26,8 +26,14 @@ export default function FHETest() {
       // Initialize FHEVM SDK
       await initSDK(); // Loads WASM
       
-      // Create FHEVM instance using SepoliaConfig
-      const config = { ...SepoliaConfig, network: (window as any).ethereum };
+      // Create FHEVM instance using SepoliaConfig with proper configuration
+      const config = { 
+        ...SepoliaConfig, 
+        network: (window as any).ethereum,
+        // Add explicit configuration for Sepolia
+        chainId: 11155111,
+        gatewayChainId: 11155111,
+      };
       const fhevm = await createInstance(config);
 
       setTestResult("✅ FHEVM instance created successfully!");
