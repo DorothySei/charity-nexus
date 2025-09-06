@@ -30,34 +30,8 @@ export default function FHEDonationHandler({
     setIsProcessing(true);
 
     try {
-      // Dynamic import FHEVM SDK
       // Use CDN version instead of npm package
       throw new Error("FHE SDK not available - use CDN version");
-      
-      // Initialize FHEVM SDK
-      await initSDK();
-      
-      // Create FHEVM instance
-      const config = { 
-        ...SepoliaConfig, 
-        network: (window as any).ethereum,
-        chainId: 11155111,
-        gatewayChainId: 11155111,
-      };
-      const fhevm = await createInstance(config);
-
-      // Create encrypted input
-      const encryptedInput = await fhevm
-        .createEncryptedInput(CHARITY_NEXUS_ADDRESS, address)
-        .add8(amount)
-        .encrypt();
-
-      // Get the encrypted data and proof
-      const encryptedData = encryptedInput.handles[0];
-
-      // Call the contract with encrypted data
-      // This would be called from the parent component
-      onSuccess();
       
     } catch (error: any) {
       console.error("FHE donation error:", error);

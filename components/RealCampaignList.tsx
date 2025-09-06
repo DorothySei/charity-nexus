@@ -126,9 +126,9 @@ const loadFHEVMSDK = async (): Promise<void> => {
       try {
         console.log('Trying dynamic import...');
         // Try to load from CDN again with a different approach
-        if (window.RelayerSDK) {
+        if ((window as any)['RelayerSDK']) {
           console.log('Found RelayerSDK on window object');
-          const sdk = window.RelayerSDK;
+          const sdk = (window as any)['RelayerSDK'];
           
           // Assign to window for consistency
           (window as any).initSDK = sdk.initSDK;
