@@ -162,7 +162,9 @@ export async function GET() {
       if (index === 0) {
         targetAmountUSD = 10 * ethPrice; // Campaign 0: 10 ETH target (10000000000000000000 wei)
       } else if (index === 1) {
-        targetAmountUSD = 10000; // Campaign 1: $10,000 target (from frontend creation)
+        targetAmountUSD = 10000; // Campaign 1: $10,000 target (from successful transaction)
+      } else if (index === 2) {
+        targetAmountUSD = 5000; // Campaign 2: $5,000 target (Food for Student)
       } else {
         targetAmountUSD = 50000 + (index * 10000); // Default for other campaigns
       }

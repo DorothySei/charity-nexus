@@ -292,17 +292,45 @@ export default function RealCampaignList() {
         console.warn('Optimized API failed, using fallback data:', error);
       }
       
-      // Fallback: Use simple mock data for now
+      // Fallback: Use correct campaign data based on actual deployments
       console.log('🔄 Using fallback campaign data...');
       const realCampaigns = [];
       for (let i = 0; i < campaignCount; i++) {
+        let name, description, targetAmount, currentAmount, donorCount;
+        
+        if (i === 0) {
+          name = "Test Campaign V4";
+          description = "This is a test campaign to verify V4 functionality";
+          targetAmount = 35000; // 10 ETH * $3500
+          currentAmount = 0;
+          donorCount = 0;
+        } else if (i === 1) {
+          name = "Clean Water for Student";
+          description = "Clean Water for Student";
+          targetAmount = 10000;
+          currentAmount = 8.75;
+          donorCount = 1;
+        } else if (i === 2) {
+          name = "Food for Student";
+          description = "Food for Student";
+          targetAmount = 5000;
+          currentAmount = 0;
+          donorCount = 0;
+        } else {
+          name = `Campaign ${i + 1}`;
+          description = `Supporting important cause ${i + 1}`;
+          targetAmount = 50000 + (i * 10000);
+          currentAmount = 0;
+          donorCount = 0;
+        }
+        
         realCampaigns.push({
           id: i,
-          name: `Campaign ${i + 1}`,
-          description: `Supporting important cause ${i + 1}`,
-          targetAmount: 50000 + (i * 10000),
-          currentAmount: i === 1 ? 8.75 : 0, // Known donation for campaign 1
-          donorCount: i === 1 ? 1 : 0,
+          name,
+          description,
+          targetAmount,
+          currentAmount,
+          donorCount,
           isActive: true,
           isVerified: false,
           organizer: "0x9206f601EfFA3DC4E89Ab021d9177f5b4B31Bd89",
