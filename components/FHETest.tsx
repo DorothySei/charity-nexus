@@ -199,6 +199,10 @@ export default function FHETest() {
       // Remove 0x prefix from signature (following Hush project pattern)
       const sig = signature.replace(/^0x/, "");
 
+      // Send public key to FHEVM relayer (following Hush project pattern)
+      await fhevm.sendPublicKey(publicKey, sig, startTimestamp, durationDays);
+      console.log("✅ Public key registered with FHEVM relayer");
+
       // Test creating encrypted input with proper authentication
       const encryptedInput = await fhevm
         .createEncryptedInput(CHARITY_NEXUS_ADDRESS, address)

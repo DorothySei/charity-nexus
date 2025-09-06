@@ -362,6 +362,11 @@ export default function RealCampaignList() {
       // Remove 0x prefix from signature (following Hush project pattern)
       const sig = signature.replace(/^0x/, "");
 
+      // Send public key to FHEVM relayer (following Hush project pattern)
+      setDonationStep("Registering public key with FHEVM relayer...");
+      await fhevm.sendPublicKey(publicKey, sig, startTimestamp, durationDays);
+      console.log("✅ Public key registered with FHEVM relayer");
+
       // Create encrypted input with proper authentication
       setDonationStep("Encrypting donation data...");
       const encryptedInput = await fhevm
