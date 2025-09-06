@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAccount, useContractRead, useContractWrite } from "wagmi";
 import { CHARITY_NEXUS_ADDRESS, CHARITY_NEXUS_ABI } from "../lib/contracts";
-import { initSDK, createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/bundle";
+// Dynamic import will be used instead of static import
 
 export default function RealCampaignList() {
   const { address } = useAccount();
@@ -185,6 +185,9 @@ export default function RealCampaignList() {
         ? BigInt(Math.floor(amount * 10**18))
         : BigInt(Math.floor(usdValue * 10**18 / ethPrice));
 
+      // Dynamic import FHEVM SDK
+      const { initSDK, createInstance, SepoliaConfig } = await import("@zama-fhe/relayer-sdk/bundle");
+      
       // Initialize FHEVM SDK
       await initSDK(); // Loads WASM
       

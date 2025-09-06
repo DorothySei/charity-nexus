@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAccount } from "wagmi";
-import { initSDK, createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/bundle";
+// Dynamic import will be used instead of static import
 import { CHARITY_NEXUS_ADDRESS } from "../lib/contracts";
 
 export default function FHETest() {
@@ -20,6 +20,9 @@ export default function FHETest() {
     setTestResult("Testing FHEVM SDK...");
 
     try {
+      // Dynamic import FHEVM SDK
+      const { initSDK, createInstance, SepoliaConfig } = await import("@zama-fhe/relayer-sdk/bundle");
+      
       // Initialize FHEVM SDK
       await initSDK(); // Loads WASM
       
