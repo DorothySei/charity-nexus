@@ -199,14 +199,8 @@ export default function FHETest() {
       // Remove 0x prefix from signature (following Hush project pattern)
       const sig = signature.replace(/^0x/, "");
 
-      // Register public key with FHEVM (required for contract calls)
-      try {
-        await fhevm.sendPublicKey(publicKey, "0x7808874C4A5994e249e0c92D94d67Fd9836e096a");
-        setTestResult("🔑 Public key registered successfully with FHEVM");
-      } catch (registerError) {
-        console.warn("⚠️ Public key registration failed:", registerError);
-        setTestResult("⚠️ Public key registration failed, but continuing...");
-      }
+      // Note: Following Orion Finance pattern - no explicit public key registration needed
+      // The FHEVM SDK handles public key registration automatically
 
       console.log("✅ FHEVM authentication completed via EIP-712 signature");
 
