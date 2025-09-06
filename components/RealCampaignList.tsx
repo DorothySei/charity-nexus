@@ -470,10 +470,37 @@ export default function RealCampaignList() {
       let inputProofHex: `0x${string}`;
       
       try {
-        const encryptedInput = await fhevm
-          .createEncryptedInput(CHARITY_NEXUS_ADDRESS, address!)
-          .add32(fheAmount)
-          .encrypt();
+        let encryptedInput;
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount < maxRetries) {
+          try {
+            console.log(`🔄 Attempting FHE encryption (attempt ${retryCount + 1}/${maxRetries})...`);
+            encryptedInput = await fhevm
+              .createEncryptedInput(CHARITY_NEXUS_ADDRESS, address!)
+              .add32(fheAmount)
+              .encrypt();
+            break; // Success, exit retry loop
+          } catch (encryptError: any) {
+            retryCount++;
+            console.error(`❌ FHE encryption attempt ${retryCount} failed:`, encryptError.message);
+            
+            if (encryptError.message.includes("REQUEST FAILED RESPONSE") || 
+                encryptError.message.includes("500") ||
+                encryptError.message.includes("Internal Server Error")) {
+              if (retryCount < maxRetries) {
+                console.log(`⏳ Retrying in ${retryCount * 2} seconds...`);
+                await new Promise(resolve => setTimeout(resolve, retryCount * 2000));
+                continue;
+              } else {
+                throw new Error(`FHE Relayer service is temporarily unavailable. Please try again later. (Attempted ${maxRetries} times)`);
+              }
+            } else {
+              throw encryptError; // Re-throw non-retryable errors
+            }
+          }
+        }
 
         // Get the encrypted data (bytes32 format)
         const encryptedData = encryptedInput.handles[0];
@@ -491,7 +518,21 @@ export default function RealCampaignList() {
         console.log("🔒 Input proof (hex):", inputProofHex);
       } catch (relayerError) {
         console.error("❌ FHE encryption failed:", relayerError);
-        throw new Error(`FHE encryption failed: ${relayerError instanceof Error ? relayerError.message : 'Unknown error'}`);
+        
+        // Provide more specific error messages
+        if (relayerError instanceof Error) {
+          if (relayerError.message.includes("REQUEST FAILED RESPONSE") || 
+              relayerError.message.includes("500") ||
+              relayerError.message.includes("Internal Server Error")) {
+            throw new Error("FHE Relayer service is temporarily unavailable. Please try again in a few minutes.");
+          } else if (relayerError.message.includes("temporarily unavailable")) {
+            throw relayerError; // Re-throw our custom error
+          } else {
+            throw new Error(`FHE encryption failed: ${relayerError.message}`);
+          }
+        } else {
+          throw new Error("FHE encryption failed: Unknown error");
+        }
       }
 
       // Submit donation to blockchain
