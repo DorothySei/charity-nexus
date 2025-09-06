@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAccount, useContractRead, useContractWrite } from "wagmi";
 import { CHARITY_NEXUS_ADDRESS, CHARITY_NEXUS_ABI } from "../lib/contracts";
-import { createInstance } from "@fhevm/sdk";
+import { createInstance } from "@fhevm/sdk/web";
 
 export default function RealCampaignList() {
   const { address } = useAccount();
@@ -193,10 +193,7 @@ export default function RealCampaignList() {
         gatewayChainId: 11155111, // Sepolia
         chainId: 11155111,
         network: window.ethereum, // Use browser provider
-        publicKey: {
-          data: null,
-          id: null,
-        },
+        relayerUrl: "https://api.zama.ai/relayer", // FHEVM relayer URL
       });
 
       // Create encrypted input
