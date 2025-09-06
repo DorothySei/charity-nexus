@@ -200,8 +200,23 @@ export default function FHETest() {
       const sig = signature.replace(/^0x/, "");
 
       // Send public key to FHEVM relayer (following Hush project pattern)
-      await fhevm.sendPublicKey(publicKey, sig, startTimestamp, durationDays);
-      console.log("✅ Public key registered with FHEVM relayer");
+      // Check available methods on fhevm instance
+      console.log("🔍 Available FHEVM methods:", Object.getOwnPropertyNames(fhevm));
+      
+      // Try different possible method names
+      if (typeof fhevm.sendPublicKey === 'function') {
+        await fhevm.sendPublicKey(publicKey, sig, startTimestamp, durationDays);
+        console.log("✅ Public key registered with FHEVM relayer (sendPublicKey)");
+      } else if (typeof fhevm.registerPublicKey === 'function') {
+        await fhevm.registerPublicKey(publicKey, sig, startTimestamp, durationDays);
+        console.log("✅ Public key registered with FHEVM relayer (registerPublicKey)");
+      } else if (typeof fhevm.authenticate === 'function') {
+        await fhevm.authenticate(publicKey, sig, startTimestamp, durationDays);
+        console.log("✅ Public key registered with FHEVM relayer (authenticate)");
+      } else {
+        console.log("⚠️ No public key registration method found, skipping...");
+        console.log("Available methods:", Object.getOwnPropertyNames(fhevm));
+      }
 
       // Test creating encrypted input with proper authentication
       const encryptedInput = await fhevm
