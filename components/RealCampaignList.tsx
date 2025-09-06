@@ -83,19 +83,48 @@ export default function RealCampaignList() {
             "Providing emergency relief and support during natural disasters"
           ];
           
-          realCampaigns.push({
-            id: i,
-            name: campaignNames[i] || `Campaign ${i + 1}`,
-            description: descriptions[i] || `Supporting important cause ${i + 1}`,
-            targetAmount: 50000 + (i * 10000),
-            currentAmount: Math.floor((50000 + (i * 10000)) * (0.3 + Math.random() * 0.4)),
-            donorCount: Math.floor(50 + Math.random() * 200),
-            isActive: true,
-            isVerified: true,
-            organizer: "0x9206f601EfFA3DC4E89Ab021d9177f5b4B31Bd89",
-            startTime: Date.now() - (7 + i * 3) * 24 * 60 * 60 * 1000,
-            endTime: Date.now() + (30 - i * 2) * 24 * 60 * 60 * 1000,
-          });
+          // Try to get real data from contract via API
+          try {
+            const response = await fetch('/api/campaign-info', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ campaignId: i })
+            });
+            
+            if (response.ok) {
+              const contractData = await response.json();
+              realCampaigns.push({
+                id: i,
+                name: contractData.name || campaignNames[i] || `Campaign ${i + 1}`,
+                description: contractData.description || descriptions[i] || `Supporting important cause ${i + 1}`,
+                targetAmount: parseInt(contractData.targetAmount) || (50000 + (i * 10000)),
+                currentAmount: parseInt(contractData.currentAmount) || 0,
+                donorCount: parseInt(contractData.donorCount) || 0,
+                isActive: contractData.isActive !== false,
+                isVerified: contractData.isVerified || false,
+                organizer: contractData.organizer || "0x9206f601EfFA3DC4E89Ab021d9177f5b4B31Bd89",
+                startTime: contractData.startTime ? Number(contractData.startTime) * 1000 : Date.now() - (7 + i * 3) * 24 * 60 * 60 * 1000,
+                endTime: contractData.endTime ? Number(contractData.endTime) * 1000 : Date.now() + (30 - i * 2) * 24 * 60 * 60 * 1000,
+              });
+            } else {
+              throw new Error('API call failed');
+            }
+          } catch (apiError) {
+            // Fallback to default data if API fails
+            realCampaigns.push({
+              id: i,
+              name: campaignNames[i] || `Campaign ${i + 1}`,
+              description: descriptions[i] || `Supporting important cause ${i + 1}`,
+              targetAmount: 50000 + (i * 10000),
+              currentAmount: 0, // Start with 0 for real data
+              donorCount: 0, // Start with 0 for real data
+              isActive: true,
+              isVerified: false,
+              organizer: "0x9206f601EfFA3DC4E89Ab021d9177f5b4B31Bd89",
+              startTime: Date.now() - (7 + i * 3) * 24 * 60 * 60 * 1000,
+              endTime: Date.now() + (30 - i * 2) * 24 * 60 * 60 * 1000,
+            });
+          }
         } catch (error) {
           console.warn(`Failed to load campaign ${i}:`, error);
         }
