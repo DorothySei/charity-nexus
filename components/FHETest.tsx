@@ -28,7 +28,7 @@ export default function FHETest() {
         gatewayChainId: 11155111,
         chainId: 11155111,
         network: window.ethereum,
-        relayerUrl: "https://api.zama.ai/relayer",
+        // Remove relayerUrl to avoid CORS issues
       });
 
       setTestResult("✅ FHEVM instance created successfully!");

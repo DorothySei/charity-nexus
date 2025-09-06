@@ -193,7 +193,7 @@ export default function RealCampaignList() {
         gatewayChainId: 11155111, // Sepolia
         chainId: 11155111,
         network: window.ethereum, // Use browser provider
-        relayerUrl: "https://api.zama.ai/relayer", // FHEVM relayer URL
+        // Remove relayerUrl to avoid CORS issues
       });
 
       // Create encrypted input
