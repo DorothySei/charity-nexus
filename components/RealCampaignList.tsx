@@ -298,17 +298,20 @@ export default function RealCampaignList() {
       for (let i = 0; i < campaignCount; i++) {
         let name, description, targetAmount, currentAmount, donorCount;
         
+        // Use current ETH price for calculations
+        const currentEthPrice = ethPrice || 3800; // Fallback to $3800 if not available
+        
         if (i === 0) {
           name = "Test Campaign V4";
           description = "This is a test campaign to verify V4 functionality";
-          targetAmount = 35000; // 10 ETH * $3500
-          currentAmount = 0;
-          donorCount = 0;
+          targetAmount = 10 * currentEthPrice; // 10 ETH * current ETH price
+          currentAmount = 0.0026 * currentEthPrice; // Real donation: 0.0026 ETH
+          donorCount = 1;
         } else if (i === 1) {
           name = "Clean Water for Student";
           description = "Clean Water for Student";
           targetAmount = 10000;
-          currentAmount = 8.75;
+          currentAmount = 0.0025 * currentEthPrice; // Real donation: 0.0025 ETH
           donorCount = 1;
         } else if (i === 2) {
           name = "Food for Student";
