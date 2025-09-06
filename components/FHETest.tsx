@@ -132,14 +132,37 @@ export default function FHETest() {
       
       // Initialize FHEVM SDK
       await (window as any).initSDK(); // Loads WASM
+
+      // Switch to Sepolia network (following Hush project pattern)
+      try {
+        await (window as any).ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0xaa36a7" }], // Sepolia chain ID
+        });
+      } catch (switchError: any) {
+        if (switchError.code === 4902) {
+          // Add Sepolia network if not present
+          await (window as any).ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0xaa36a7",
+                chainName: "Sepolia",
+                nativeCurrency: { name: "Sepolia Ether", symbol: "SEP", decimals: 18 },
+                rpcUrls: ["https://rpc.sepolia.org"],
+                blockExplorerUrls: ["https://sepolia.etherscan.io"],
+              },
+            ],
+          });
+        } else {
+          console.warn("Failed to switch network:", switchError);
+        }
+      }
       
-      // Create FHEVM instance using SepoliaConfig with proper configuration
+      // Create FHEVM instance using SepoliaConfig (following Hush project pattern)
       const config = { 
         ...(window as any).SepoliaConfig, 
         network: (window as any).ethereum,
-        // Add explicit configuration for Sepolia
-        chainId: 11155111,
-        gatewayChainId: 11155111,
       };
       const fhevm = await (window as any).createInstance(config);
 
@@ -165,13 +188,16 @@ export default function FHETest() {
 
       console.log("📝 Created EIP-712 signature request");
 
-      // Sign using wallet (following Hush project pattern)
+      // Sign using wallet (following Hush project pattern with proper format)
       const signature = await (window as any).ethereum.request({
         method: 'eth_signTypedData_v4',
         params: [address, JSON.stringify(eip712)],
       });
 
       console.log("✍️ Signed EIP-712 data");
+
+      // Remove 0x prefix from signature (following Hush project pattern)
+      const sig = signature.replace(/^0x/, "");
 
       // Test creating encrypted input with proper authentication
       const encryptedInput = await fhevm
