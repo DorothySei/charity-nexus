@@ -164,6 +164,9 @@ export default function RealCampaignList() {
       if (!campaignCounter) return;
       
       const campaignCount = Number(campaignCounter);
+      console.log(`📊 Found ${campaignCount} campaigns in contract`);
+      console.log(`🔍 Using contract address: ${CHARITY_NEXUS_ADDRESS}`);
+      
       if (campaignCount === 0) {
         setCampaigns([]);
         setLoading(false);
