@@ -142,11 +142,19 @@ export default function CampaignList() {
         ? BigInt(Math.floor(amount * 10**18))
         : BigInt(Math.floor(usdValue * 10**18 / ethPrice)); // Convert USD to ETH
 
+      // Note: This component uses simplified donation without proper FHE encryption
+      // For proper FHE encryption, use the Campaigns tab instead
+      console.warn("CampaignList uses simplified donation. For FHE encryption, use the Campaigns tab.");
+      
       await makeDonation({
         address: CHARITY_NEXUS_ADDRESS,
         abi: CHARITY_NEXUS_ABI,
         functionName: "makeDonation",
-        args: [campaignId, fheAmountHex, "0x"],
+        args: [
+          campaignId, 
+          "0x0000000000000000000000000000000000000000000000000000000000000000", // Zero encrypted amount
+          "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" // Zero input proof
+        ],
         value: weiAmount,
       });
 

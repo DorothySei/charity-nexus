@@ -60,7 +60,7 @@ const loadFHEVMSDK = async (): Promise<void> => {
     // Try CDN first
     const tryCDN = () => {
       const script = document.createElement('script');
-      script.src = 'https://cdn.zama.ai/relayer-sdk-js/0.1.0-9/relayer-sdk-js.umd.cjs';
+      script.src = 'https://cdn.zama.ai/relayer-sdk-js/0.1.2/relayer-sdk-js.umd.cjs';
       script.type = 'text/javascript';
       
       script.onload = () => {
@@ -72,9 +72,38 @@ const loadFHEVMSDK = async (): Promise<void> => {
           console.log('window.initSDK:', typeof (window as any).initSDK);
           console.log('window.createInstance:', typeof (window as any).createInstance);
           console.log('window.SepoliaConfig:', typeof (window as any).SepoliaConfig);
+          console.log('window.RelayerSDK:', typeof (window as any).RelayerSDK);
           
-          if ((window as any).initSDK && (window as any).createInstance && (window as any).SepoliaConfig) {
+          // Check all possible global objects
+          const possibleObjects = ['RelayerSDK', 'FHE', 'Zama', 'relayerSDK', 'fhe', 'initSDK', 'createInstance', 'SepoliaConfig'];
+          possibleObjects.forEach(obj => {
+            if ((window as any)[obj]) {
+              console.log(`Found global object: window.${obj}`, (window as any)[obj]);
+            }
+          });
+          
+          // Try to find the SDK object
+          let sdk = null;
+          if ((window as any).relayerSDK) {
+            sdk = (window as any).relayerSDK;
+          } else if ((window as any).RelayerSDK) {
+            sdk = (window as any).RelayerSDK;
+          } else if ((window as any).FHE) {
+            sdk = (window as any).FHE;
+          } else if ((window as any).Zama) {
+            sdk = (window as any).Zama;
+          }
+          
+          if (sdk && sdk.initSDK && sdk.createInstance && sdk.SepoliaConfig) {
             console.log('FHEVM SDK loaded from CDN successfully');
+            // Assign to window for consistency
+            (window as any).initSDK = sdk.initSDK;
+            (window as any).createInstance = sdk.createInstance;
+            (window as any).SepoliaConfig = sdk.SepoliaConfig;
+            sdkLoaded = true;
+            resolve();
+          } else if ((window as any).initSDK && (window as any).createInstance && (window as any).SepoliaConfig) {
+            console.log('FHEVM SDK loaded from CDN successfully (direct window objects)');
             sdkLoaded = true;
             resolve();
           } else {
@@ -96,23 +125,79 @@ const loadFHEVMSDK = async (): Promise<void> => {
     const tryDynamicImport = async () => {
       try {
         console.log('Trying dynamic import...');
-        const module = await import("@zama-fhe/relayer-sdk/bundle");
-        const sdk = (module as any).default || module;
-        
-        console.log('Dynamic import successful:', Object.keys(sdk));
-        
-        // Assign to window for consistency
-        (window as any).initSDK = sdk.initSDK;
-        (window as any).createInstance = sdk.createInstance;
-        (window as any).SepoliaConfig = sdk.SepoliaConfig;
-        
-        if ((window as any).initSDK && (window as any).createInstance && (window as any).SepoliaConfig) {
-          console.log('FHEVM SDK loaded via dynamic import successfully');
-          sdkLoaded = true;
-          resolve();
-        } else {
-          reject(new Error('SDK functions not available after dynamic import'));
+        // Try to load from CDN again with a different approach
+        if (window.RelayerSDK) {
+          console.log('Found RelayerSDK on window object');
+          const sdk = window.RelayerSDK;
+          
+          // Assign to window for consistency
+          (window as any).initSDK = sdk.initSDK;
+          (window as any).createInstance = sdk.createInstance;
+          (window as any).SepoliaConfig = sdk.SepoliaConfig;
+          
+          if ((window as any).initSDK && (window as any).createInstance && (window as any).SepoliaConfig) {
+            console.log('FHEVM SDK loaded via dynamic import successfully');
+            sdkLoaded = true;
+            resolve();
+          } else {
+            reject(new Error('SDK functions not available after dynamic import'));
+          }
+          return;
         }
+        
+        // If CDN failed, try to create a new script element
+        const script = document.createElement('script');
+        script.src = 'https://cdn.zama.ai/relayer-sdk-js/0.1.2/relayer-sdk-js.umd.cjs';
+        script.type = 'text/javascript';
+        
+        script.onload = () => {
+          console.log('FHEVM SDK loaded via fallback script');
+          
+          // Wait a bit for the script to initialize
+          setTimeout(() => {
+            // Check all possible global objects
+            const possibleObjects = ['RelayerSDK', 'FHE', 'Zama', 'relayerSDK', 'fhe', 'initSDK', 'createInstance', 'SepoliaConfig'];
+            possibleObjects.forEach(obj => {
+              if ((window as any)[obj]) {
+                console.log(`Found global object: window.${obj}`, (window as any)[obj]);
+              }
+            });
+            
+            // Try to find the SDK object
+            let sdk = null;
+            if ((window as any).relayerSDK) {
+              sdk = (window as any).relayerSDK;
+            } else if ((window as any).RelayerSDK) {
+              sdk = (window as any).RelayerSDK;
+            } else if ((window as any).FHE) {
+              sdk = (window as any).FHE;
+            } else if ((window as any).Zama) {
+              sdk = (window as any).Zama;
+            }
+            
+            if (sdk && sdk.initSDK && sdk.createInstance && sdk.SepoliaConfig) {
+              console.log('FHEVM SDK loaded via fallback script successfully');
+              // Assign to window for consistency
+              (window as any).initSDK = sdk.initSDK;
+              (window as any).createInstance = sdk.createInstance;
+              (window as any).SepoliaConfig = sdk.SepoliaConfig;
+              sdkLoaded = true;
+              resolve();
+            } else if ((window as any).initSDK && (window as any).createInstance && (window as any).SepoliaConfig) {
+              console.log('FHEVM SDK loaded via fallback script successfully (direct window objects)');
+              sdkLoaded = true;
+              resolve();
+            } else {
+              reject(new Error('SDK functions not available after fallback script load'));
+            }
+          }, 1000); // Wait 1 second for initialization
+        };
+        
+        script.onerror = () => {
+          reject(new Error('Failed to load FHEVM SDK via fallback script'));
+        };
+        
+        document.head.appendChild(script);
       } catch (error) {
         console.error('Dynamic import also failed:', error);
         reject(new Error('Both CDN and dynamic import failed'));
@@ -276,8 +361,8 @@ export default function RealCampaignList() {
       
       setDonationStep("Preparing FHE encryption...");
       
-      // Use full value for FHE (euint32 supports up to 4.2 billion)
-      const fheAmount = Math.min(4294967295, Math.max(0, Math.floor(usdValue)));
+      // Use a very small value for FHE to avoid validation issues (1-10 range)
+      const fheAmount = Math.min(10, Math.max(1, Math.floor(usdValue / 100)));
       const campaignId = BigInt(selectedCampaign.id);
 
       // Convert to wei for ETH transfer

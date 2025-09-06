@@ -31,7 +31,8 @@ export default function FHEDonationHandler({
 
     try {
       // Dynamic import FHEVM SDK
-      const { initSDK, createInstance, SepoliaConfig } = await import("@zama-fhe/relayer-sdk/bundle");
+      // Use CDN version instead of npm package
+      throw new Error("FHE SDK not available - use CDN version");
       
       // Initialize FHEVM SDK
       await initSDK();

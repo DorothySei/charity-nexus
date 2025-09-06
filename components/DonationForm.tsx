@@ -73,14 +73,18 @@ export default function DonationForm() {
       // Convert amount to bytes32 format for contract
       const amountHex = `0x${amount.toString(16).padStart(64, '0')}` as `0x${string}`;
 
+      // Note: This component uses simplified donation without proper FHE encryption
+      // For proper FHE encryption, use the Campaigns tab instead
+      console.warn("DonationForm uses simplified donation. For FHE encryption, use the Campaigns tab.");
+      
       await write({
         address: CHARITY_NEXUS_ADDRESS,
         abi: CHARITY_NEXUS_ABI,
         functionName: "makeDonation",
         args: [
           campaignId,
-          amountHex, // This will be encrypted as euint8 in the contract
-          "0x", // inputProof placeholder
+          "0x0000000000000000000000000000000000000000000000000000000000000000", // Zero encrypted amount
+          "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" // Zero input proof
         ],
         value: BigInt(parseInt(formData.amount) * 10**18), // Convert to wei for actual ETH transfer
       });

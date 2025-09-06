@@ -216,7 +216,7 @@ export async function loadFHEVMSDK(): Promise<void> {
 
     // Create script element to load SDK from CDN
     const script = document.createElement('script');
-    script.src = 'https://unpkg.com/@zama-fhe/relayer-sdk@0.1.2/dist/index.js';
+    script.src = 'https://cdn.zama.ai/relayer-sdk-js/0.1.2/relayer-sdk-js.umd.cjs';
     script.type = 'text/javascript';
     
     script.onload = () => {

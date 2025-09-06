@@ -1,104 +1,56 @@
 import { ethers } from "hardhat";
-import { createInstance } from "@fhevm/sdk/node";
-import { JsonRpcProvider } from "ethers";
 
 async function main() {
-  console.log("🧪 Testing FHE encryption with SDK...");
-  
-  const contractAddress = "0x24B7B02B50e052d790A13B6488324bfa073da643";
-  const provider = new JsonRpcProvider("https://1rpc.io/sepolia");
-  const signers = await ethers.getSigners();
-  
-  if (signers.length === 0) {
-    console.log("❌ No signers available");
-    return;
-  }
-  
-  const signer = signers[0];
-  console.log(`👤 Using account: ${signer.address}`);
-  
+  console.log("🔍 Testing FHE encryption with real data...");
+
+  const contractAddress = "0xC339D8Fd330979E50D7e8D7Ce5f78F7D380668c7";
+  const CharityNexus = await ethers.getContractFactory("CharityNexus");
+  const charityNexus = CharityNexus.attach(contractAddress);
+
+  console.log(`📋 Contract address: ${contractAddress}`);
+
   try {
-    // Create FHEVM instance
-    console.log("🔐 Creating FHEVM instance...");
-    const fhevm = await createInstance({
-      verifyingContractAddress: "0xbc91f3daD1A5F19F8390c400196e58073B6a0BC4", // Sepolia InputVerifier
-      kmsContractAddress: "0x1364cBBf2cDF5032C47d8226a6f6FBD2AFCDacAC", // Sepolia KMS
-      aclContractAddress: "0x687820221192C5B662b25367F70076A37bc79b6c", // Sepolia ACL
-      gatewayChainId: 11155111, // Sepolia
-      chainId: 11155111,
-      network: "https://1rpc.io/sepolia",
-      publicKey: {
-        data: null,
-        id: null,
-      },
-    });
+    // Test with the exact same encrypted data from the frontend
+    const encryptedData = "0x1cb0f03e3a3df225ad18525fecb7df3111c4ebaa91000000000000aa36a70400";
+    const inputProof = "0x01011cb0f03e3a3df225ad18525fecb7df3111c4ebaa91000000000000aa36a704000fe820db44c262f1024733f685e88ff85712bf5c3ea9e15a766d1eb716a52c4c585845d4166c8a0fc15812070aa98a19009f839a156c7f111431456f435e14481b";
     
-    // Create encrypted input
-    console.log("🔒 Creating encrypted input...");
-    const donationAmount = 1; // Small amount for testing
-    const encryptedInput = await fhevm
-      .createEncryptedInput(contractAddress, signer.address)
-      .add8(donationAmount)
-      .encrypt();
+    console.log("\n🧪 Testing makeDonation with real FHE data...");
+    console.log("Encrypted data:", encryptedData);
+    console.log("Input proof:", inputProof);
     
-    console.log("✅ Encrypted input created:", {
-      data: encryptedInput.data,
-      proof: encryptedInput.proof ? "Present" : "Not present"
-    });
+    const tx = await charityNexus.makeDonation(
+      0, // campaignId
+      encryptedData, // amount (externalEuint32)
+      inputProof, // inputProof
+      { value: ethers.parseEther("0.01") } // 0.01 ETH
+    );
+
+    console.log("✅ makeDonation function call successful!");
+    console.log("Transaction hash:", tx.hash);
     
-    // Get contract instance
-    const contract = await ethers.getContractAt("CharityNexus", contractAddress, signer);
+    // Wait for transaction confirmation
+    const receipt = await tx.wait();
+    console.log("✅ Transaction confirmed in block:", receipt?.blockNumber);
     
-    // Check campaign 0 info
-    console.log("📋 Checking campaign 0...");
-    const campaignInfo = await contract.getCampaignInfo(0);
-    console.log("Campaign 0 info:", {
-      name: campaignInfo[0],
-      isActive: campaignInfo[5],
-      endTime: new Date(Number(campaignInfo[9]) * 1000).toISOString()
-    });
+  } catch (error: any) {
+    console.error("❌ makeDonation function failed:", error.message);
     
-    // Check if campaign is active and not ended
-    const isActive = campaignInfo[5];
-    const endTime = Number(campaignInfo[9]);
-    const currentTime = Math.floor(Date.now() / 1000);
-    
-    if (!isActive || currentTime > endTime) {
-      console.log("❌ Campaign is not available for donations");
-      return;
+    // Try to decode the error
+    if (error.data) {
+      console.log("Error data:", error.data);
     }
     
-    // Try to make a donation with encrypted data
-    console.log("💝 Attempting FHE donation...");
-    const weiAmount = ethers.parseEther("0.001"); // 0.001 ETH
-    
-    try {
-      const tx = await contract.makeDonation(0, encryptedInput.data, { value: weiAmount });
-      console.log("✅ FHE Donation transaction sent:", tx.hash);
-      
-      const receipt = await tx.wait();
-      console.log("✅ FHE Donation confirmed in block:", receipt?.blockNumber);
-      
-    } catch (error: any) {
-      console.error("❌ FHE Donation failed:", error.message);
-      
-      // Try to get more details about the error
-      if (error.data) {
-        console.log("Error data:", error.data);
-      }
-      if (error.reason) {
-        console.log("Error reason:", error.reason);
-      }
+    // Check if it's the same error
+    if (error.data === "0x9de3392c") {
+      console.log("🔍 This is the same FHE validation error from the frontend");
+      console.log("The issue is likely with FHE verification in the contract");
     }
-    
-  } catch (error) {
-    console.error("❌ Error:", error);
   }
 }
 
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error("❌ Test failed:", error);
+    console.error("❌ Script failed:", error);
     process.exit(1);
   });

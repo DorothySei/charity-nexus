@@ -145,9 +145,9 @@ export const CHARITY_NEXUS_ABI = [
         "type": "string"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint32",
         "name": "_targetAmount",
-        "type": "uint256"
+        "type": "uint32"
       },
       {
         "internalType": "uint256",
@@ -185,30 +185,6 @@ export const CHARITY_NEXUS_ABI = [
       }
     ],
     "name": "makeDonation",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "campaignId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint8",
-        "name": "amount",
-        "type": "uint8"
-      }
-    ],
-    "name": "makeDonationWithAmount",
     "outputs": [
       {
         "internalType": "uint256",
