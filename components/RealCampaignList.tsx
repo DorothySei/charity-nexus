@@ -139,6 +139,12 @@ export default function RealCampaignList() {
         usdValue = amount * ethPrice;
       }
       
+      // Check minimum donation amount (10 USD equivalent)
+      if (usdValue < 10) {
+        alert(`Minimum donation amount is $10 USD equivalent (${donationCurrency === "ETH" ? (10 / ethPrice).toFixed(6) : "10"} ${donationCurrency})`);
+        return;
+      }
+      
       // Scale down for FHE (max 255 for euint8)
       const fheAmount = Math.min(255, Math.max(1, Math.floor(usdValue / 100)));
       const campaignId = BigInt(selectedCampaign.id);
@@ -344,9 +350,9 @@ export default function RealCampaignList() {
                   step="0.01"
                   value={donationAmount}
                   onChange={(e) => setDonationAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  placeholder={donationCurrency === "ETH" ? "e.g., 0.1" : "e.g., 100"}
-                  min="0.01"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
+                  placeholder={donationCurrency === "ETH" ? "e.g., 0.005" : "e.g., 10"}
+                  min={donationCurrency === "ETH" ? (10 / ethPrice).toFixed(6) : "10"}
                   required
                 />
                 {donationCurrency === "ETH" && (
