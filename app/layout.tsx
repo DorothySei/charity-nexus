@@ -11,8 +11,6 @@ export const metadata: Metadata = {
   description: "Privacy-preserving charitable giving and impact tracking using FHE technology",
   icons: {
     icon: '/icon.svg',
-    shortcut: '/icon.svg',
-    apple: '/icon.svg',
   },
 };
 
