@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAccount, useContractRead, useContractWrite } from "wagmi";
 import { CHARITY_NEXUS_ADDRESS, CHARITY_NEXUS_ABI } from "../lib/contracts";
+import { createInstance } from "@fhevm/sdk";
 
 export default function RealCampaignList() {
   const { address } = useAccount();
@@ -184,12 +185,26 @@ export default function RealCampaignList() {
         ? BigInt(Math.floor(amount * 10**18))
         : BigInt(Math.floor(usdValue * 10**18 / ethPrice));
 
-      // For FHE contracts, we need to pass the amount as bytes32
-      // This represents the encrypted FHE data
-      const fheAmountBytes = "0x" + fheAmount.toString(16).padStart(64, '0');
+      // Create encrypted data using FHEVM SDK
+      const fhevm = await createInstance({
+        chainId: 11155111, // Sepolia
+        publicKey: {
+          name: "FHEVM",
+          version: "1.0.0",
+        },
+      });
+
+      // Create encrypted input
+      const encryptedInput = await fhevm
+        .createEncryptedInput(CHARITY_NEXUS_ADDRESS, address!)
+        .add8(fheAmount)
+        .encrypt();
+
+      // Get the encrypted data (bytes32 format)
+      const encryptedData = encryptedInput.data;
 
       await makeDonation({
-        args: [campaignId, fheAmountBytes],
+        args: [campaignId, encryptedData],
         value: weiAmount,
       });
 

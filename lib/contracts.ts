@@ -198,6 +198,30 @@ export const CHARITY_NEXUS_ABI = [
         "type": "uint256"
       },
       {
+        "internalType": "uint8",
+        "name": "amount",
+        "type": "uint8"
+      }
+    ],
+    "name": "makeDonationWithAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "campaignId",
+        "type": "uint256"
+      },
+      {
         "internalType": "uint32",
         "name": "beneficiariesReached",
         "type": "uint32"
