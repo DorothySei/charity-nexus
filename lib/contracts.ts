@@ -174,7 +174,7 @@ export const CHARITY_NEXUS_ABI = [
         "type": "uint256"
       },
       {
-        "internalType": "externalEuint32",
+        "internalType": "bytes32",
         "name": "amount",
         "type": "bytes32"
       },
