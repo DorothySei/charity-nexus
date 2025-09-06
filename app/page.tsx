@@ -14,8 +14,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-pink-50 via-red-50 to-orange-100">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+      {/* Navigation - Fixed at top */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -35,7 +35,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <div className="charity-gradient text-white py-20 px-4">
+      <div className="charity-gradient text-white py-20 px-4 mt-16">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
             Charity Nexus Platform

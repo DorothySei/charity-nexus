@@ -121,6 +121,10 @@ export default function RealCampaignList() {
   const [donationCurrency, setDonationCurrency] = useState("ETH");
   const [showDonationForm, setShowDonationForm] = useState(false);
   const [ethPrice, setEthPrice] = useState(2000);
+  const [isDonating, setIsDonating] = useState(false);
+  const [donationStep, setDonationStep] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Read campaign counter from contract
   const { data: campaignCounter } = useContractRead({
@@ -130,7 +134,7 @@ export default function RealCampaignList() {
   });
 
   // Contract write for donations
-  const { write: makeDonation, isLoading: isDonating } = useContractWrite({
+  const { write: makeDonation, isLoading: isContractLoading } = useContractWrite({
     address: CHARITY_NEXUS_ADDRESS,
     abi: CHARITY_NEXUS_ABI,
     functionName: "makeDonation",
@@ -264,6 +268,9 @@ export default function RealCampaignList() {
     }
 
     try {
+      setIsDonating(true);
+      setDonationStep("Initializing donation...");
+      
       const amount = parseFloat(donationAmount);
       if (isNaN(amount) || amount <= 0) {
         alert("Please enter a valid donation amount");
@@ -283,6 +290,8 @@ export default function RealCampaignList() {
         return;
       }
       
+      setDonationStep("Preparing FHE encryption...");
+      
       // Scale down for FHE (max 255 for euint8)
       const fheAmount = Math.min(255, Math.max(1, Math.floor(usdValue / 100)));
       const campaignId = BigInt(selectedCampaign.id);
@@ -293,12 +302,15 @@ export default function RealCampaignList() {
         : BigInt(Math.floor(usdValue * 10**18 / ethPrice));
 
       // Load FHEVM SDK from CDN (more reliable than dynamic import)
+      setDonationStep("Loading FHEVM SDK...");
       await loadFHEVMSDK();
       
       // Initialize FHEVM SDK
+      setDonationStep("Initializing FHEVM SDK...");
       await (window as any).initSDK(); // Loads WASM
 
       // Switch to Sepolia network (following Hush project pattern)
+      setDonationStep("Switching to Sepolia network...");
       try {
         await (window as any).ethereum.request({
           method: "wallet_switchEthereumChain",
@@ -325,6 +337,7 @@ export default function RealCampaignList() {
       }
       
       // Create FHEVM instance using SepoliaConfig (following Hush project pattern)
+      setDonationStep("Creating FHEVM instance...");
       const config = { 
         ...(window as any).SepoliaConfig, 
         network: (window as any).ethereum,
@@ -334,6 +347,7 @@ export default function RealCampaignList() {
       console.log("🔐 FHEVM instance created successfully");
 
       // Generate keypair for user (following Hush project pattern)
+      setDonationStep("Generating encryption keys...");
       const keypair = fhevm.generateKeypair();
       const publicKey = keypair.publicKey;
       const privateKey = keypair.privateKey;
@@ -341,6 +355,7 @@ export default function RealCampaignList() {
       console.log("🔑 Generated keypair for user");
 
       // Create EIP-712 signature request (following Hush project pattern)
+      setDonationStep("Preparing signature request...");
       const startTimestamp = Math.floor(Date.now() / 1000).toString();
       const durationDays = "10";
       const contractAddresses = [CHARITY_NEXUS_ADDRESS];
@@ -354,6 +369,7 @@ export default function RealCampaignList() {
       console.log("📝 Created EIP-712 signature request");
 
       // Sign using wallet (following Hush project pattern with proper format)
+      setDonationStep("Please sign the transaction in your wallet...");
       const signature = await (window as any).ethereum.request({
         method: 'eth_signTypedData_v4',
         params: [address, JSON.stringify(eip712)],
@@ -365,6 +381,7 @@ export default function RealCampaignList() {
       const sig = signature.replace(/^0x/, "");
 
       // Create encrypted input with proper authentication
+      setDonationStep("Encrypting donation data...");
       const encryptedInput = await fhevm
         .createEncryptedInput(CHARITY_NEXUS_ADDRESS, address!)
         .add8(fheAmount)
@@ -379,18 +396,27 @@ export default function RealCampaignList() {
 
       console.log("🔒 Created real FHE encrypted data:", encryptedDataHex);
 
+      // Submit donation to blockchain
+      setDonationStep("Submitting donation to blockchain...");
       await makeDonation({
         args: [campaignId, encryptedDataHex],
         value: weiAmount,
       });
 
-      alert("Donation made successfully!");
+      // Show success message
+      setSuccessMessage(`🎉 Donation of ${donationAmount} ${donationCurrency} ($${usdValue.toFixed(2)} USD) made successfully to ${selectedCampaign.name}!`);
+      setShowSuccessModal(true);
+
+      // Close modal and reset form
       setShowDonationForm(false);
       setSelectedCampaign(null);
       setDonationAmount("");
     } catch (error) {
       console.error("Error making donation:", error);
       alert("Failed to make donation, please try again");
+    } finally {
+      setIsDonating(false);
+      setDonationStep("");
     }
   };
 
@@ -615,12 +641,50 @@ export default function RealCampaignList() {
                 <button
                   type="submit"
                   disabled={isDonating}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-lg hover:from-pink-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-lg hover:from-pink-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isDonating ? "Processing..." : "💝 Donate"}
+                  {isDonating ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>{donationStep || "Processing..."}</span>
+                    </div>
+                  ) : (
+                    "💝 Donate"
+                  )}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full text-center">
+            <div className="mb-6">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Donation Successful!</h3>
+              <p className="text-gray-600 text-lg">{successMessage}</p>
+            </div>
+            
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-700">
+                Your donation has been encrypted using FHE technology and recorded on the blockchain. 
+                Thank you for supporting this cause! 🙏
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg hover:from-green-600 hover:to-blue-600 transition-all duration-200 font-medium"
+            >
+              Continue
+            </button>
           </div>
         </div>
       )}
