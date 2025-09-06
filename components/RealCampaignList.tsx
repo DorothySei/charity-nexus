@@ -125,6 +125,7 @@ export default function RealCampaignList() {
   const [donationStep, setDonationStep] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [transactionHash, setTransactionHash] = useState("");
 
   // Read campaign counter from contract
   const { data: campaignCounter } = useContractRead({
@@ -134,7 +135,7 @@ export default function RealCampaignList() {
   });
 
   // Contract write for donations
-  const { write: makeDonation, isLoading: isContractLoading } = useContractWrite({
+  const { writeAsync: makeDonation, isLoading: isContractLoading } = useContractWrite({
     address: CHARITY_NEXUS_ADDRESS,
     abi: CHARITY_NEXUS_ABI,
     functionName: "makeDonation",
@@ -398,10 +399,45 @@ export default function RealCampaignList() {
 
       // Submit donation to blockchain
       setDonationStep("Submitting donation to blockchain...");
-      await makeDonation({
+      
+      // Use writeAsync to get transaction hash
+      const txResult = await makeDonation({
         args: [campaignId, encryptedDataHex],
         value: weiAmount,
       });
+
+      console.log("📝 Transaction submitted:", txResult);
+      setTransactionHash(txResult.hash);
+
+      // Wait for transaction confirmation
+      setDonationStep("Waiting for transaction confirmation...");
+      
+      // Wait for transaction to be mined
+      const receipt = await (window as any).ethereum.request({
+        method: 'eth_getTransactionReceipt',
+        params: [txResult.hash],
+      });
+
+      // Poll for transaction receipt
+      let attempts = 0;
+      const maxAttempts = 30; // 30 seconds timeout
+      while (!receipt && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const currentReceipt = await (window as any).ethereum.request({
+          method: 'eth_getTransactionReceipt',
+          params: [txResult.hash],
+        });
+        if (currentReceipt) {
+          console.log("✅ Transaction confirmed:", currentReceipt);
+          break;
+        }
+        attempts++;
+        setDonationStep(`Waiting for confirmation... (${attempts}/${maxAttempts})`);
+      }
+
+      if (attempts >= maxAttempts) {
+        throw new Error("Transaction confirmation timeout");
+      }
 
       // Show success message
       setSuccessMessage(`🎉 Donation of ${donationAmount} ${donationCurrency} ($${usdValue.toFixed(2)} USD) made successfully to ${selectedCampaign.name}!`);
@@ -673,10 +709,28 @@ export default function RealCampaignList() {
             </div>
             
             <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 mb-3">
                 Your donation has been encrypted using FHE technology and recorded on the blockchain. 
                 Thank you for supporting this cause! 🙏
               </p>
+              {transactionHash && (
+                <div className="mt-3 p-3 bg-gray-100 rounded-lg">
+                  <p className="text-xs text-gray-600 mb-2">Transaction Hash:</p>
+                  <div className="flex items-center space-x-2">
+                    <code className="text-xs bg-white px-2 py-1 rounded border flex-1 break-all">
+                      {transactionHash}
+                    </code>
+                    <a
+                      href={`https://sepolia.etherscan.io/tx/${transactionHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 text-xs underline"
+                    >
+                      View on Etherscan
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
