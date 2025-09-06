@@ -4,9 +4,12 @@ import "./globals.css";
 import { Providers } from "./providers";
 import WalletErrorHandler from "../components/WalletErrorHandler";
 
-// Polyfill global for FHEVM SDK
+// Polyfill global and self for FHEVM SDK
 if (typeof global === 'undefined') {
   (window as any).global = globalThis;
+}
+if (typeof self === 'undefined') {
+  (window as any).self = globalThis;
 }
 
 const inter = Inter({ subsets: ["latin"] });

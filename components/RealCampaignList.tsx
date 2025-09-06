@@ -193,6 +193,10 @@ export default function RealCampaignList() {
         gatewayChainId: 11155111, // Sepolia
         chainId: 11155111,
         network: window.ethereum, // Use browser provider
+        publicKey: {
+          data: null,
+          id: null,
+        },
       });
 
       // Create encrypted input

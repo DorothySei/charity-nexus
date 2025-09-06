@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -10,10 +10,11 @@ const nextConfig = {
       };
     }
     
-    // Add global polyfill for FHEVM SDK
+    // Add polyfills for FHEVM SDK
     config.plugins.push(
-      new config.webpack.DefinePlugin({
+      new webpack.DefinePlugin({
         global: 'globalThis',
+        self: 'globalThis',
       })
     );
     
