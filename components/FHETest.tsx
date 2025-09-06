@@ -164,8 +164,7 @@ export default function FHETest() {
         ...(window as any).SepoliaConfig, 
         network: (window as any).ethereum,
         aclContractAddress: "0x2Fb4341027eb1d2aD8B5D9708187df8633cAFA92", // ACL contract address for Sepolia
-        // Try alternative relayer URL if default fails
-        relayerUrl: "https://relayer.sepolia.zama.ai",
+        // Remove custom relayerUrl to use default from SepoliaConfig
       };
       const fhevm = await (window as any).createInstance(config);
 
