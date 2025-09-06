@@ -11,7 +11,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
       rpc: (chain) => {
         if (chain.id === sepolia.id) {
           return {
-            http: "https://sepolia.rpc.zama.ai",
+            http: "https://1rpc.io/sepolia",
           };
         }
         return null;

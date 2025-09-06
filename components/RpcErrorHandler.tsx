@@ -6,31 +6,42 @@ export default function RpcErrorHandler() {
   const [rpcStatus, setRpcStatus] = useState<'checking' | 'connected' | 'error'>('checking');
 
   useEffect(() => {
-    // Check RPC connectivity
+    // Check RPC connectivity with multiple providers
     const checkRpcStatus = async () => {
-      try {
-        const response = await fetch('https://sepolia.rpc.zama.ai', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'eth_blockNumber',
-            params: [],
-            id: 1,
-          }),
-        });
+      const rpcProviders = [
+        'https://1rpc.io/sepolia',
+        'https://sepolia.rpc.zama.ai',
+        'https://rpc.sepolia.org'
+      ];
 
-        if (response.ok) {
-          setRpcStatus('connected');
-        } else {
-          setRpcStatus('error');
+      for (const rpcUrl of rpcProviders) {
+        try {
+          const response = await fetch(rpcUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'eth_blockNumber',
+              params: [],
+              id: 1,
+            }),
+            signal: AbortSignal.timeout(5000), // 5 second timeout
+          });
+
+          if (response.ok) {
+            setRpcStatus('connected');
+            return; // Found a working provider
+          }
+        } catch (error) {
+          console.warn(`RPC provider ${rpcUrl} failed:`, error);
+          continue; // Try next provider
         }
-      } catch (error) {
-        console.warn('RPC connection check failed:', error);
-        setRpcStatus('error');
       }
+      
+      // If we get here, all providers failed
+      setRpcStatus('error');
     };
 
     checkRpcStatus();
