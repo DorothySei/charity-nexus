@@ -107,7 +107,11 @@ export default function Home() {
               <RealCampaignList />
             </div>
           )}
-          {activeTab === "create" && <CreateCampaign />}
+          {activeTab === "create" && (
+            <CreateCampaign 
+              onCampaignCreated={() => setActiveTab("campaigns")} 
+            />
+          )}
           {activeTab === "donate" && <DonationForm />}
           {activeTab === "impact" && <ImpactTracker />}
         </div>

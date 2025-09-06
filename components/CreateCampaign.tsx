@@ -5,7 +5,11 @@ import { useAccount, useContractWrite } from "wagmi";
 import { CHARITY_NEXUS_ADDRESS, CHARITY_NEXUS_ABI } from "../lib/contracts";
 import SuccessModal from "./SuccessModal";
 
-export default function CreateCampaign() {
+interface CreateCampaignProps {
+  onCampaignCreated?: () => void; // Callback to notify parent component
+}
+
+export default function CreateCampaign({ onCampaignCreated }: CreateCampaignProps = {}) {
   const { address } = useAccount();
   const { writeContractAsync: write } = useContractWrite();
   
@@ -191,7 +195,10 @@ export default function CreateCampaign() {
         actionText="View Campaigns"
         onAction={() => {
           setShowSuccessModal(false);
-          // You could add navigation here if needed
+          // Navigate to campaigns tab
+          if (onCampaignCreated) {
+            onCampaignCreated();
+          }
         }}
       />
     </div>
