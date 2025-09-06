@@ -146,7 +146,7 @@ export default function CampaignList() {
         address: CHARITY_NEXUS_ADDRESS,
         abi: CHARITY_NEXUS_ABI,
         functionName: "makeDonation",
-        args: [campaignId, fheAmountHex],
+        args: [campaignId, fheAmountHex, "0x"],
         value: weiAmount,
       });
 

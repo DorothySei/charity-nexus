@@ -127,8 +127,8 @@ export async function GET() {
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 
     // Get campaign counter
-    const campaignCounter = await contract.campaignCounter();
-    const campaignCount = Number(campaignCounter);
+    const campaignCounter = await (contract as any).campaignCounter();
+    const campaignCount = Number(campaignCounter || 0);
 
     if (campaignCount === 0) {
       return NextResponse.json({ campaigns: [] });
@@ -140,7 +140,7 @@ export async function GET() {
     // Get all campaigns in parallel
     const campaignPromises = [];
     for (let i = 0; i < campaignCount; i++) {
-      campaignPromises.push(contract.campaigns(i));
+      campaignPromises.push((contract as any).campaigns(i));
     }
 
     const campaigns = await Promise.all(campaignPromises);

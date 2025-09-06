@@ -107,8 +107,8 @@ export async function POST(request: NextRequest) {
     const ethPrice = await getETHPrice();
 
     // Get total donation count
-    const donationCounter = await contract.donationCounter();
-    const totalDonations = Number(donationCounter);
+    const donationCounter = await (contract as any).donationCounter();
+    const totalDonations = Number(donationCounter || 0);
 
     // Query all donations and filter by campaign
     let totalETH = 0;
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     
     // Get the most recent donation (assuming it's for the requested campaign)
     if (totalDonations > 0) {
-      const lastDonation = await contract.donations(totalDonations - 1);
+      const lastDonation = await (contract as any).donations(totalDonations - 1);
       
       // Check if this donation is for the requested campaign
       // Since we can't easily determine this from the contract data,

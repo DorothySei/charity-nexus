@@ -80,6 +80,7 @@ export default function DonationForm() {
         args: [
           campaignId,
           amountHex, // This will be encrypted as euint8 in the contract
+          "0x", // inputProof placeholder
         ],
         value: BigInt(parseInt(formData.amount) * 10**18), // Convert to wei for actual ETH transfer
       });
@@ -98,7 +99,7 @@ export default function DonationForm() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,

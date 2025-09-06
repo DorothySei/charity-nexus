@@ -38,7 +38,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.24",
-    "@types/react-dom": "^19.1.9",
+    "@types/react-dom": "^18.3.1",
     "chai": "^4.5.0",
     "hardhat": "^2.19.0",
     "hardhat-gas-reporter": "^1.0.10",
