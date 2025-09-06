@@ -187,11 +187,12 @@ export default function RealCampaignList() {
 
       // Create encrypted data using FHEVM SDK
       const fhevm = await createInstance({
-        chainId: 11155111, // Sepolia
-        publicKey: {
-          name: "FHEVM",
-          version: "1.0.0",
-        },
+        verifyingContractAddress: "0xbc91f3daD1A5F19F8390c400196e58073B6a0BC4", // Sepolia InputVerifier
+        kmsContractAddress: "0x1364cBBf2cDF5032C47d8226a6f6FBD2AFCDacAC", // Sepolia KMS
+        aclContractAddress: "0x687820221192C5B662b25367F70076A37bc79b6c", // Sepolia ACL
+        gatewayChainId: 11155111, // Sepolia
+        chainId: 11155111,
+        network: window.ethereum, // Use browser provider
       });
 
       // Create encrypted input
