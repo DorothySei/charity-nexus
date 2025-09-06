@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 
-const CONTRACT_ADDRESS = "0x4630b088E2a6013527Bd9A68aB2c0ceb1a06F18F";
+const CONTRACT_ADDRESS = "0x7808874C4A5994e249e0c92D94d67Fd9836e096a";
 const RPC_URL = "https://1rpc.io/sepolia";
 
 // Contract ABI for getCampaignInfo function
