@@ -140,20 +140,54 @@ export default function FHETest() {
         // Add explicit configuration for Sepolia
         chainId: 11155111,
         gatewayChainId: 11155111,
-        // Remove relayerUrl to use default configuration
       };
       const fhevm = await (window as any).createInstance(config);
 
       setTestResult("✅ FHEVM instance created successfully!");
 
-      // Test creating encrypted input
+      // Generate keypair for user (following Hush project pattern)
+      const keypair = fhevm.generateKeypair();
+      const publicKey = keypair.publicKey;
+      const privateKey = keypair.privateKey;
+
+      console.log("🔑 Generated keypair for user");
+
+      // Create EIP-712 signature request (following Hush project pattern)
+      const startTimestamp = Math.floor(Date.now() / 1000).toString();
+      const durationDays = "10";
+      const contractAddresses = [CHARITY_NEXUS_ADDRESS];
+      const eip712 = fhevm.createEIP712(
+        publicKey,
+        contractAddresses,
+        startTimestamp,
+        durationDays
+      );
+
+      console.log("📝 Created EIP-712 signature request");
+
+      // Sign using wallet (following Hush project pattern)
+      const signature = await (window as any).ethereum.request({
+        method: 'eth_signTypedData_v4',
+        params: [address, JSON.stringify(eip712)],
+      });
+
+      console.log("✍️ Signed EIP-712 data");
+
+      // Test creating encrypted input with proper authentication
       const encryptedInput = await fhevm
         .createEncryptedInput(CHARITY_NEXUS_ADDRESS, address)
         .add8(1)
         .encrypt();
 
-      setTestResult("✅ FHEVM encryption test successful! Encrypted data created.");
-      console.log("Encrypted input:", encryptedInput);
+      // Get the encrypted data
+      const encryptedData = encryptedInput.handles[0];
+      if (!encryptedData) {
+        throw new Error("Failed to create encrypted data");
+      }
+      const encryptedDataHex = `0x${Array.from(encryptedData).map((b: unknown) => (b as number).toString(16).padStart(2, '0')).join('')}`;
+
+      setTestResult("✅ Real FHE encryption test successful! Encrypted data created.");
+      console.log("Real encrypted data:", encryptedDataHex);
 
     } catch (error: any) {
       setTestResult(`❌ FHEVM test failed: ${error.message}`);
