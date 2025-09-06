@@ -170,7 +170,8 @@ export default function RealCampaignList() {
       
       // Check minimum donation amount (10 USD equivalent)
       if (usdValue < 10) {
-        alert(`Minimum donation amount is $10 USD equivalent (${donationCurrency === "ETH" ? (10 / ethPrice).toFixed(6) : "10"} ${donationCurrency})`);
+        const minAmount = donationCurrency === "ETH" ? (10 / ethPrice).toFixed(6) : "10";
+        alert(`Minimum donation amount is $10 USD equivalent.\nPlease enter at least ${minAmount} ${donationCurrency}`);
         return;
       }
       
@@ -367,7 +368,7 @@ export default function RealCampaignList() {
                 <select
                   value={donationCurrency}
                   onChange={(e) => setDonationCurrency(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
                 >
                   <option value="ETH">ETH (Ethereum)</option>
                   <option value="USD">USD (US Dollar)</option>
@@ -385,22 +386,27 @@ export default function RealCampaignList() {
                   onChange={(e) => setDonationAmount(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
                   placeholder={donationCurrency === "ETH" ? "e.g., 0.005" : "e.g., 10"}
-                  min={donationCurrency === "ETH" ? (10 / ethPrice).toFixed(6) : "10"}
+                  min="0"
                   required
                 />
-                {donationCurrency === "ETH" && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Current ETH Price: ${ethPrice.toFixed(2)} USD
+                <div className="mt-1 space-y-1">
+                  {donationCurrency === "ETH" && (
+                    <p className="text-xs text-gray-500">
+                      Current ETH Price: ${ethPrice.toFixed(2)} USD
+                    </p>
+                  )}
+                  <p className="text-xs text-orange-600">
+                    Minimum: {donationCurrency === "ETH" ? (10 / ethPrice).toFixed(6) : "10"} {donationCurrency} ($10 USD)
                   </p>
-                )}
-                {donationAmount && (
-                  <p className="text-xs text-blue-600 mt-1">
-                    Equivalent USD: ${donationCurrency === "ETH" 
-                      ? (parseFloat(donationAmount) * ethPrice).toFixed(2)
-                      : donationAmount
-                    }
-                  </p>
-                )}
+                  {donationAmount && (
+                    <p className="text-xs text-blue-600">
+                      Equivalent USD: ${donationCurrency === "ETH" 
+                        ? (parseFloat(donationAmount) * ethPrice).toFixed(2)
+                        : donationAmount
+                      }
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="flex space-x-3">
