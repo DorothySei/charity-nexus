@@ -91,7 +91,7 @@ const CONTRACT_ABI = [
 ];
 
 // Cache ETH price for 5 minutes
-let ethPriceCache = { price: 3800, timestamp: 0 };
+let ethPriceCache = { price: 4300, timestamp: 0 };
 const CACHE_DURATION = 5 * 60 * 1000;
 
 async function getETHPrice(): Promise<number> {
@@ -102,16 +102,18 @@ async function getETHPrice(): Promise<number> {
   }
   
   try {
-    const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT', {
+    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd', {
       headers: { 'User-Agent': 'Mozilla/5.0' },
       signal: AbortSignal.timeout(2000) // 2 second timeout
     });
     
     if (response.ok) {
       const data = await response.json();
-      const price = parseFloat(data.price);
-      ethPriceCache = { price, timestamp: now };
-      return price;
+      if (data.ethereum?.usd) {
+        const price = parseFloat(data.ethereum.usd);
+        ethPriceCache = { price, timestamp: now };
+        return price;
+      }
     }
   } catch (error) {
     console.warn('Failed to fetch ETH price:', error);

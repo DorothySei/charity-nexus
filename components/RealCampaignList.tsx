@@ -227,7 +227,7 @@ export default function RealCampaignList() {
   const [donationAmount, setDonationAmount] = useState("");
   const [donationCurrency, setDonationCurrency] = useState("ETH");
   const [showDonationForm, setShowDonationForm] = useState(false);
-  const [ethPrice, setEthPrice] = useState(2000);
+  const [ethPrice, setEthPrice] = useState(4300);
   const [isDonating, setIsDonating] = useState(false);
   const [donationStep, setDonationStep] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -244,11 +244,14 @@ export default function RealCampaignList() {
   // Contract write for donations
   const { writeContractAsync: makeDonation, isPending: isContractLoading } = useContractWrite();
 
-  // Fetch ETH price
+  // Fetch ETH price (same API as backend for consistency)
   useEffect(() => {
     const fetchEthPrice = async () => {
       try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd', {
+          headers: { 'User-Agent': 'Mozilla/5.0' },
+          signal: AbortSignal.timeout(2000) // 2 second timeout
+        });
         const data = await response.json();
         if (data.ethereum?.usd) {
           setEthPrice(data.ethereum.usd);
@@ -299,7 +302,7 @@ export default function RealCampaignList() {
         let name, description, targetAmount, currentAmount, donorCount;
         
         // Use current ETH price for calculations
-        const currentEthPrice = ethPrice || 3800; // Fallback to $3800 if not available
+        const currentEthPrice = ethPrice || 4300; // Fallback to $4300 if not available
         
         if (i === 0) {
           name = "Test Campaign V4";
