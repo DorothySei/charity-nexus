@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import RealCampaignList from "../components/RealCampaignList";
+import FHETest from "../components/FHETest";
 import CreateCampaign from "../components/CreateCampaign";
 import DonationForm from "../components/DonationForm";
 import ImpactTracker from "../components/ImpactTracker";
@@ -102,7 +103,12 @@ export default function Home() {
 
         {/* Tab Content */}
         <div className="space-y-8">
-          {activeTab === "campaigns" && <RealCampaignList />}
+          {activeTab === "campaigns" && (
+            <div className="space-y-8">
+              <FHETest />
+              <RealCampaignList />
+            </div>
+          )}
           {activeTab === "create" && <CreateCampaign />}
           {activeTab === "donate" && <DonationForm />}
           {activeTab === "impact" && <ImpactTracker />}
