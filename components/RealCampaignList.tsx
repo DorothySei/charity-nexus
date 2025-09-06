@@ -321,46 +321,18 @@ export default function RealCampaignList() {
       // Create FHEVM instance using SepoliaConfig with ACL address (following latest FHEVM docs)
       setDonationStep("Creating FHEVM instance...");
       
-      // Try different relayer URLs based on common FHEVM configurations
-      const possibleRelayerUrls = [
-        "https://relayer.testnet.zama.cloud", // Original
-        "https://relayer.sepolia.zama.ai",    // Alternative 1
-        "https://api.zama.ai/relayer",        // Alternative 2
-        "https://relayer.zama.ai",            // Alternative 3
-      ];
+      // Create FHEVM instance using Hush project's successful configuration
+      console.log("🔍 Creating FHEVM instance with SepoliaConfig (following Hush project pattern)...");
+      console.log("📋 SepoliaConfig:", (window as any).SepoliaConfig);
       
-      let fhevm;
-      let workingRelayerUrl = null;
+      // Use the exact same configuration as Hush project (which works successfully)
+      const config = { 
+        ...(window as any).SepoliaConfig, 
+        network: (window as any).ethereum,
+      };
       
-      for (const relayerUrl of possibleRelayerUrls) {
-        try {
-          console.log(`🔍 Trying relayer URL: ${relayerUrl}`);
-          const config = { 
-            ...(window as any).SepoliaConfig, 
-            network: (window as any).ethereum,
-            aclContractAddress: "0x2Fb4341027eb1d2aD8B5D9708187df8633cAFA92",
-            relayerUrl: relayerUrl,
-          };
-          fhevm = await (window as any).createInstance(config);
-          workingRelayerUrl = relayerUrl;
-          console.log(`✅ Successfully created FHEVM instance with relayer: ${relayerUrl}`);
-          break;
-        } catch (error) {
-          console.warn(`❌ Failed to create FHEVM instance with relayer ${relayerUrl}:`, error);
-          continue;
-        }
-      }
-      
-      if (!fhevm) {
-        // Fallback to default config without custom relayer
-        console.log("🔄 Falling back to default SepoliaConfig without custom relayer");
-        const config = { 
-          ...(window as any).SepoliaConfig, 
-          network: (window as any).ethereum,
-          aclContractAddress: "0x2Fb4341027eb1d2aD8B5D9708187df8633cAFA92",
-        };
-        fhevm = await (window as any).createInstance(config);
-      }
+      console.log("⚙️ Final config:", config);
+      const fhevm = await (window as any).createInstance(config);
 
       console.log("🔐 FHEVM instance created successfully");
 

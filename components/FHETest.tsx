@@ -159,12 +159,10 @@ export default function FHETest() {
         }
       }
       
-      // Create FHEVM instance using SepoliaConfig with ACL address (following latest FHEVM docs)
+      // Create FHEVM instance using Hush project's successful configuration
       const config = { 
         ...(window as any).SepoliaConfig, 
         network: (window as any).ethereum,
-        aclContractAddress: "0x2Fb4341027eb1d2aD8B5D9708187df8633cAFA92", // ACL contract address for Sepolia
-        // Remove custom relayerUrl to use default from SepoliaConfig
       };
       const fhevm = await (window as any).createInstance(config);
 
