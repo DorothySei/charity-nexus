@@ -5,6 +5,28 @@ import { useAccount, useContractRead, useContractWrite } from "wagmi";
 import { CHARITY_NEXUS_ADDRESS, CHARITY_NEXUS_ABI } from "../lib/contracts";
 // Dynamic import will be used instead of static import
 
+// Handle ethereum property conflicts from browser extensions
+if (typeof window !== 'undefined') {
+  try {
+    // Check if ethereum is already defined and is a valid provider
+    if (window.ethereum && typeof window.ethereum.request === 'function') {
+      console.log('✅ Ethereum provider already available');
+    } else {
+      // Wait for ethereum to be injected by wallet extensions
+      const checkEthereum = () => {
+        if (window.ethereum && typeof window.ethereum.request === 'function') {
+          console.log('✅ Ethereum provider injected by wallet extension');
+        } else {
+          setTimeout(checkEthereum, 100);
+        }
+      };
+      checkEthereum();
+    }
+  } catch (error) {
+    console.warn('⚠️ Ethereum provider conflict detected:', error);
+  }
+}
+
 // Global state for SDK loading
 let sdkLoaded = false;
 let sdkLoadPromise: Promise<void> | null = null;
