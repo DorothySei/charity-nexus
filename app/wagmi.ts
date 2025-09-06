@@ -2,10 +2,23 @@ import { getDefaultWallets } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig } from "wagmi";
 import { hardhat, sepolia } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
+import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [sepolia, hardhat],
-  [publicProvider()]
+  [
+    jsonRpcProvider({
+      rpc: (chain) => {
+        if (chain.id === sepolia.id) {
+          return {
+            http: "https://sepolia.rpc.zama.ai",
+          };
+        }
+        return null;
+      },
+    }),
+    publicProvider(),
+  ]
 );
 
 const { connectors } = getDefaultWallets({

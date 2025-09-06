@@ -7,6 +7,7 @@ import CreateCampaign from "../components/CreateCampaign";
 import DonationForm from "../components/DonationForm";
 import ImpactTracker from "../components/ImpactTracker";
 import WalletTest from "../components/WalletTest";
+import RpcErrorHandler from "../components/RpcErrorHandler";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("campaigns");
@@ -53,6 +54,7 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <RpcErrorHandler />
         {/* Tab Navigation */}
         <div className="flex justify-center mb-8">
           <div className="bg-white rounded-lg p-1 shadow-sm">
