@@ -19,6 +19,14 @@ export const config = createConfig({
   connectors,
   publicClient,
   webSocketPublicClient,
+  // Add error handling for wallet conflicts
+  logger: {
+    warn: (message) => {
+      if (message.includes('ethereum') || message.includes('wallet')) {
+        console.warn('Wallet warning:', message);
+      }
+    },
+  },
 });
 
 export { chains };
