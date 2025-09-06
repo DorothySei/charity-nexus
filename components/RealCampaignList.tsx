@@ -381,7 +381,7 @@ export default function RealCampaignList() {
                 </label>
                 <input
                   type="number"
-                  step="0.01"
+                  step={donationCurrency === "ETH" ? "0.000001" : "0.01"}
                   value={donationAmount}
                   onChange={(e) => setDonationAmount(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
