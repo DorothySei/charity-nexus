@@ -170,33 +170,11 @@ export default function RealCampaignList() {
         return;
       }
 
-      // Try to read real campaign data from contract
+      // Read real campaign data from contract
       const realCampaigns = [];
-      for (let i = 0; i < Math.min(campaignCount, 7); i++) {
+      for (let i = 0; i < campaignCount; i++) {
         try {
-          // For now, we'll create realistic data based on the contract count
-          // In a full implementation, you would decrypt FHE values off-chain
-          const campaignNames = [
-            "Clean Water Initiative",
-            "Education for All", 
-            "Medical Relief Fund",
-            "Food Security Program",
-            "Environmental Protection",
-            "Children's Healthcare",
-            "Disaster Relief Fund"
-          ];
-          
-          const descriptions = [
-            "Providing clean water access to rural communities in developing countries",
-            "Building schools and providing educational resources for underprivileged children",
-            "Supporting medical facilities and healthcare access in remote areas",
-            "Ensuring food security and nutrition for vulnerable populations",
-            "Protecting natural resources and promoting sustainable practices",
-            "Improving healthcare access and treatment for children in need",
-            "Providing emergency relief and support during natural disasters"
-          ];
-          
-          // Try to get real data from contract via API
+          // Get real data from contract via API
           try {
             const response = await fetch('/api/campaign-info', {
               method: 'POST',
@@ -208,8 +186,8 @@ export default function RealCampaignList() {
               const contractData = await response.json();
               realCampaigns.push({
                 id: i,
-                name: contractData.name || campaignNames[i] || `Campaign ${i + 1}`,
-                description: contractData.description || descriptions[i] || `Supporting important cause ${i + 1}`,
+                name: contractData.name || `Campaign ${i + 1}`,
+                description: contractData.description || `Supporting important cause ${i + 1}`,
                 targetAmount: parseInt(contractData.targetAmount) || (50000 + (i * 10000)),
                 currentAmount: parseInt(contractData.currentAmount) || 0,
                 donorCount: parseInt(contractData.donorCount) || 0,
@@ -226,8 +204,8 @@ export default function RealCampaignList() {
             // Fallback to default data if API fails
             realCampaigns.push({
               id: i,
-              name: campaignNames[i] || `Campaign ${i + 1}`,
-              description: descriptions[i] || `Supporting important cause ${i + 1}`,
+              name: `Campaign ${i + 1}`,
+              description: `Supporting important cause ${i + 1}`,
               targetAmount: 50000 + (i * 10000),
               currentAmount: 0, // Start with 0 for real data
               donorCount: 0, // Start with 0 for real data
