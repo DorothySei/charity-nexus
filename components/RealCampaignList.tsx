@@ -370,8 +370,16 @@ export default function RealCampaignList() {
       // Remove 0x prefix from signature (following Hush project pattern)
       const sig = signature.replace(/^0x/, "");
 
-      // Note: Modern FHEVM SDK handles public key registration automatically
-      // No explicit sendPublicKey call needed with aclContractAddress
+      // Register public key with FHEVM (required for contract calls)
+      setDonationStep("Registering public key with FHEVM...");
+      try {
+        await fhevm.sendPublicKey(publicKey, CHARITY_NEXUS_ADDRESS);
+        console.log("🔑 Public key registered successfully with FHEVM");
+      } catch (registerError) {
+        console.warn("⚠️ Public key registration failed:", registerError);
+        // Continue anyway, as some FHEVM versions handle this automatically
+      }
+
       console.log("✅ FHEVM authentication completed via EIP-712 signature");
 
       // Create encrypted input with proper authentication
