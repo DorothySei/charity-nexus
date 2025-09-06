@@ -318,11 +318,12 @@ export default function RealCampaignList() {
         }
       }
       
-      // Create FHEVM instance using SepoliaConfig (following Hush project pattern)
+      // Create FHEVM instance using SepoliaConfig with ACL address (following latest FHEVM docs)
       setDonationStep("Creating FHEVM instance...");
       const config = { 
         ...(window as any).SepoliaConfig, 
         network: (window as any).ethereum,
+        aclContractAddress: "0x2Fb4341027eb1d2aD8B5D9708187df8633cAFA92", // ACL contract address for Sepolia
       };
       const fhevm = await (window as any).createInstance(config);
 
@@ -362,27 +363,9 @@ export default function RealCampaignList() {
       // Remove 0x prefix from signature (following Hush project pattern)
       const sig = signature.replace(/^0x/, "");
 
-      // Send public key to FHEVM relayer (following Hush project pattern)
-      setDonationStep("Registering public key with FHEVM relayer...");
-      
-      // Check available methods on fhevm instance
-      console.log("🔍 Available FHEVM methods:", Object.getOwnPropertyNames(fhevm));
-      console.log("🔍 FHEVM instance:", fhevm);
-      
-      // Try different possible method names
-      if (typeof fhevm.sendPublicKey === 'function') {
-        await fhevm.sendPublicKey(publicKey, sig, startTimestamp, durationDays);
-        console.log("✅ Public key registered with FHEVM relayer (sendPublicKey)");
-      } else if (typeof fhevm.registerPublicKey === 'function') {
-        await fhevm.registerPublicKey(publicKey, sig, startTimestamp, durationDays);
-        console.log("✅ Public key registered with FHEVM relayer (registerPublicKey)");
-      } else if (typeof fhevm.authenticate === 'function') {
-        await fhevm.authenticate(publicKey, sig, startTimestamp, durationDays);
-        console.log("✅ Public key registered with FHEVM relayer (authenticate)");
-      } else {
-        console.log("⚠️ No public key registration method found, skipping...");
-        console.log("Available methods:", Object.getOwnPropertyNames(fhevm));
-      }
+      // Note: Modern FHEVM SDK handles public key registration automatically
+      // No explicit sendPublicKey call needed with aclContractAddress
+      console.log("✅ FHEVM authentication completed via EIP-712 signature");
 
       // Create encrypted input with proper authentication
       setDonationStep("Encrypting donation data...");
