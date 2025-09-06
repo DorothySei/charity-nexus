@@ -7,7 +7,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
+            value: 'unsafe-none', // Changed to allow Coinbase Wallet SDK
           },
           {
             key: 'Cross-Origin-Embedder-Policy',

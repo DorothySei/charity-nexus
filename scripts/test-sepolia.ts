@@ -4,7 +4,7 @@ async function main() {
   console.log("🧪 Testing Sepolia deployment...");
 
   // Get the deployed contract
-  const contractAddress = "0x4630b088E2a6013527Bd9A68aB2c0ceb1a06F18F";
+  const contractAddress = "0x24B7B02B50e052d790A13B6488324bfa073da643";
   const CharityNexus = await ethers.getContractFactory("CharityNexus");
   const charityNexus = CharityNexus.attach(contractAddress);
 

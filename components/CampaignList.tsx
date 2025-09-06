@@ -22,11 +22,7 @@ export default function CampaignList() {
   });
 
   // Contract write for donations
-  const { write: makeDonation, isLoading: isDonating } = useContractWrite({
-    address: CHARITY_NEXUS_ADDRESS,
-    abi: CHARITY_NEXUS_ABI,
-    functionName: "makeDonation",
-  });
+  const { writeContractAsync: makeDonation, isPending: isDonating } = useContractWrite();
 
   // Fetch ETH price
   useEffect(() => {
@@ -147,6 +143,9 @@ export default function CampaignList() {
         : BigInt(Math.floor(usdValue * 10**18 / ethPrice)); // Convert USD to ETH
 
       await makeDonation({
+        address: CHARITY_NEXUS_ADDRESS,
+        abi: CHARITY_NEXUS_ABI,
+        functionName: "makeDonation",
         args: [campaignId, fheAmountHex],
         value: weiAmount,
       });
@@ -358,7 +357,7 @@ export default function CampaignList() {
                   step="0.01"
                   value={donationAmount}
                   onChange={(e) => setDonationAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
                   placeholder={donationCurrency === "ETH" ? "e.g., 0.1" : "e.g., 100"}
                   min="0.01"
                   required

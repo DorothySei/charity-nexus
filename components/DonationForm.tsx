@@ -1,21 +1,58 @@
 "use client";
 
-import { useState } from "react";
-import { useAccount, useContractWrite } from "wagmi";
+import { useState, useEffect } from "react";
+import { useAccount, useContractWrite, useContractRead } from "wagmi";
 import { CHARITY_NEXUS_ADDRESS, CHARITY_NEXUS_ABI } from "../lib/contracts";
+import SuccessModal from "./SuccessModal";
 
 export default function DonationForm() {
   const { address } = useAccount();
-  const { write } = useContractWrite({
-    address: CHARITY_NEXUS_ADDRESS,
-    abi: CHARITY_NEXUS_ABI,
-    functionName: "makeDonation",
-  });
+  const { writeContractAsync: write } = useContractWrite();
   
   const [formData, setFormData] = useState({
     campaignId: "",
     amount: "",
   });
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Read campaign counter from contract
+  const { data: campaignCounter } = useContractRead({
+    address: CHARITY_NEXUS_ADDRESS,
+    abi: CHARITY_NEXUS_ABI,
+    functionName: "campaignCounter",
+  });
+
+  // Load campaigns
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      if (!campaignCounter) return;
+      
+      const campaignCount = Number(campaignCounter);
+      if (campaignCount === 0) {
+        setCampaigns([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/all-campaigns');
+        if (response.ok) {
+          const data = await response.json();
+          setCampaigns(data.campaigns);
+        }
+      } catch (error) {
+        console.warn('Failed to load campaigns:', error);
+      }
+      
+      setLoading(false);
+    };
+
+    loadCampaigns();
+  }, [campaignCounter]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +61,8 @@ export default function DonationForm() {
       alert("Please connect your wallet first");
       return;
     }
+
+    setIsLoading(true);
 
     try {
       // Note: For FHE implementation, amount needs to be encrypted
@@ -35,6 +74,9 @@ export default function DonationForm() {
       const amountHex = `0x${amount.toString(16).padStart(64, '0')}` as `0x${string}`;
 
       await write({
+        address: CHARITY_NEXUS_ADDRESS,
+        abi: CHARITY_NEXUS_ABI,
+        functionName: "makeDonation",
         args: [
           campaignId,
           amountHex, // This will be encrypted as euint8 in the contract
@@ -42,7 +84,8 @@ export default function DonationForm() {
         value: BigInt(parseInt(formData.amount) * 10**18), // Convert to wei for actual ETH transfer
       });
 
-      alert("Donation made successfully!");
+      // Show success modal instead of alert
+      setShowSuccessModal(true);
       setFormData({
         campaignId: "",
         amount: "",
@@ -50,6 +93,8 @@ export default function DonationForm() {
     } catch (error) {
       console.error("Error making donation:", error);
       alert("Failed to make donation");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,19 +116,30 @@ export default function DonationForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Campaign ID *
+              Select Campaign *
             </label>
-            <input
-              type="number"
-              name="campaignId"
-              value={formData.campaignId}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-              placeholder="Enter the campaign ID you want to donate to"
-              required
-            />
+            {loading ? (
+              <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500">
+                Loading campaigns...
+              </div>
+            ) : (
+              <select
+                name="campaignId"
+                value={formData.campaignId}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
+                required
+              >
+                <option value="">Choose a campaign...</option>
+                {campaigns.map((campaign) => (
+                  <option key={campaign.id} value={campaign.id}>
+                    {campaign.name} (ID: {campaign.id})
+                  </option>
+                ))}
+              </select>
+            )}
             <p className="text-sm text-gray-500 mt-1">
-              Find campaign IDs in the Campaigns tab
+              Select from available campaigns
             </p>
           </div>
           
@@ -96,7 +152,7 @@ export default function DonationForm() {
               name="amount"
               value={formData.amount}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
               placeholder="e.g., 100"
               min="100"
               max="25500"
@@ -109,9 +165,17 @@ export default function DonationForm() {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-pink-500 to-red-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-pink-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-pink-500 to-red-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-pink-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            💝 Make Donation
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                Processing Donation...
+              </div>
+            ) : (
+              "💝 Make Donation"
+            )}
           </button>
         </form>
 
@@ -142,7 +206,7 @@ export default function DonationForm() {
                 key={amount}
                 type="button"
                 onClick={() => setFormData({ ...formData, amount: amount.toString() })}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-pink-50 hover:border-pink-300 transition-colors"
+                className="px-3 py-2 text-sm font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg hover:bg-pink-50 hover:border-pink-400 hover:text-pink-700 transition-colors shadow-sm"
               >
                 ${amount}
               </button>

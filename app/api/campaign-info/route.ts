@@ -1,45 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 
-const CONTRACT_ADDRESS = "0x3668E297A5A51279186aD0981d65C3Da57F18924";
+const CONTRACT_ADDRESS = "0xC339D8Fd330979E50D7e8D7Ce5f78F7D380668c7";
 const RPC_URL = "https://1rpc.io/sepolia";
 
-// Contract ABI for getCampaignInfo function
+// Contract ABI for campaigns mapping (from compiled artifact)
 const CONTRACT_ABI = [
   {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "campaignId",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "getCampaignInfo",
+    "name": "campaigns",
     "outputs": [
       {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
+        "internalType": "euint32",
+        "name": "campaignId",
+        "type": "bytes32"
       },
       {
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
-      },
-      {
-        "internalType": "uint32",
+        "internalType": "euint32",
         "name": "targetAmount",
-        "type": "uint32"
+        "type": "bytes32"
       },
       {
-        "internalType": "uint32",
+        "internalType": "euint32",
         "name": "currentAmount",
-        "type": "uint32"
+        "type": "bytes32"
       },
       {
-        "internalType": "uint32",
+        "internalType": "euint32",
         "name": "donorCount",
-        "type": "uint32"
+        "type": "bytes32"
       },
       {
         "internalType": "bool",
@@ -50,6 +45,16 @@ const CONTRACT_ABI = [
         "internalType": "bool",
         "name": "isVerified",
         "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "description",
+        "type": "string"
       },
       {
         "internalType": "address",
@@ -85,23 +90,23 @@ export async function POST(request: NextRequest) {
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 
     // Get campaign info from contract
-    if (!contract['getCampaignInfo']) {
+    if (!contract['campaigns']) {
       return NextResponse.json({ error: 'Contract method not available' }, { status: 500 });
     }
-    const campaignInfo = await contract['getCampaignInfo'](campaignId);
+    const campaignInfo = await contract['campaigns'](campaignId);
 
-    // Parse the response
+    // Parse the response (note: euint32 fields are encrypted, so we'll use default values for now)
     const result = {
-      name: campaignInfo[0],
-      description: campaignInfo[1],
-      targetAmount: campaignInfo[2].toString(),
-      currentAmount: campaignInfo[3].toString(),
-      donorCount: campaignInfo[4].toString(),
-      isActive: campaignInfo[5],
-      isVerified: campaignInfo[6],
-      organizer: campaignInfo[7],
-      startTime: campaignInfo[8].toString(),
-      endTime: campaignInfo[9].toString()
+      name: campaignInfo[6], // name (string)
+      description: campaignInfo[7], // description (string)
+      targetAmount: "0", // targetAmount (euint32 - encrypted, use default)
+      currentAmount: "0", // currentAmount (euint32 - encrypted, use default)
+      donorCount: "0", // donorCount (euint32 - encrypted, use default)
+      isActive: campaignInfo[4], // isActive (bool)
+      isVerified: campaignInfo[5], // isVerified (bool)
+      organizer: campaignInfo[8], // creator (address)
+      startTime: campaignInfo[9].toString(), // startTime (uint256)
+      endTime: campaignInfo[10].toString() // endTime (uint256)
     };
 
     return NextResponse.json(result);

@@ -2,16 +2,16 @@
 pragma solidity ^0.8.24;
 
 import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
-import { euint8, ebool, FHE } from "@fhevm/solidity/lib/FHE.sol";
+import { euint32, externalEuint32, euint8, ebool, FHE } from "@fhevm/solidity/lib/FHE.sol";
 
 contract CharityNexus is SepoliaConfig {
     using FHE for *;
     
     struct CharityCampaign {
-        euint8 campaignId;
-        euint8 targetAmount;
-        euint8 currentAmount;
-        euint8 donorCount;
+        euint32 campaignId;
+        euint32 targetAmount;
+        euint32 currentAmount;
+        euint32 donorCount;
         bool isActive;
         bool isVerified;
         string name;
@@ -22,16 +22,16 @@ contract CharityNexus is SepoliaConfig {
     }
     
     struct Donation {
-        euint8 donationId;
-        euint8 amount;
+        euint32 donationId;
+        euint32 amount;
         address donor;
         uint256 timestamp;
     }
     
     struct ImpactReport {
-        euint8 reportId;
-        euint8 beneficiariesReached;
-        euint8 fundsUtilized;
+        euint32 reportId;
+        euint32 beneficiariesReached;
+        euint32 fundsUtilized;
         bool isVerified;
         string reportHash;
         address reporter;
@@ -41,8 +41,8 @@ contract CharityNexus is SepoliaConfig {
     mapping(uint256 => CharityCampaign) public campaigns;
     mapping(uint256 => Donation) public donations;
     mapping(uint256 => ImpactReport) public impactReports;
-    mapping(address => euint8) public donorReputation;
-    mapping(address => euint8) public charityReputation;
+    mapping(address => euint32) public donorReputation;
+    mapping(address => euint32) public charityReputation;
     
     uint256 public campaignCounter;
     uint256 public donationCounter;
@@ -52,10 +52,10 @@ contract CharityNexus is SepoliaConfig {
     address public verifier;
     
     event CampaignCreated(uint256 indexed campaignId, address indexed organizer, string name);
-    event DonationMade(uint256 indexed donationId, uint256 indexed campaignId, address indexed donor, uint8 amount);
+    event DonationMade(uint256 indexed donationId, uint256 indexed campaignId, address indexed donor, uint32 amount);
     event ImpactReported(uint256 indexed reportId, uint256 indexed campaignId, address indexed reporter);
     event CampaignVerified(uint256 indexed campaignId, bool isVerified);
-    event ReputationUpdated(address indexed user, uint8 reputation);
+    event ReputationUpdated(address indexed user, uint32 reputation);
     
     constructor(address _verifier) {
         owner = msg.sender;
@@ -65,7 +65,7 @@ contract CharityNexus is SepoliaConfig {
     function createCampaign(
         string memory _name,
         string memory _description,
-        euint8 _targetAmount,
+        uint256 _targetAmount,
         uint256 _duration
     ) public returns (uint256) {
         require(bytes(_name).length > 0, "Campaign name cannot be empty");
@@ -74,10 +74,10 @@ contract CharityNexus is SepoliaConfig {
         uint256 campaignId = campaignCounter++;
         
         campaigns[campaignId] = CharityCampaign({
-            campaignId: FHE.asEuint8(0), // Will be set properly later
-            targetAmount: _targetAmount,
-            currentAmount: FHE.asEuint8(0),
-            donorCount: FHE.asEuint8(0),
+            campaignId: FHE.asEuint32(0), // Will be set properly later
+            targetAmount: FHE.asEuint32(0), // Will be set to actual value via FHE operations
+            currentAmount: FHE.asEuint32(0),
+            donorCount: FHE.asEuint32(0),
             isActive: true,
             isVerified: false,
             name: _name,
@@ -93,7 +93,8 @@ contract CharityNexus is SepoliaConfig {
     
     function makeDonation(
         uint256 campaignId,
-        euint8 amount
+        externalEuint32 amount,
+        bytes calldata inputProof
     ) public payable returns (uint256) {
         require(campaigns[campaignId].organizer != address(0), "Campaign does not exist");
         require(campaigns[campaignId].isActive, "Campaign is not active");
@@ -101,16 +102,19 @@ contract CharityNexus is SepoliaConfig {
         
         uint256 donationId = donationCounter++;
         
+        // Convert externalEuint32 to euint32 using FHE.fromExternal
+        euint32 internalAmount = FHE.fromExternal(amount, inputProof);
+        
         donations[donationId] = Donation({
-            donationId: FHE.asEuint8(0), // Will be set properly later
-            amount: amount,
+            donationId: FHE.asEuint32(0), // Will be set properly later
+            amount: internalAmount,
             donor: msg.sender,
             timestamp: block.timestamp
         });
         
         // Update campaign totals
-        campaigns[campaignId].currentAmount = FHE.add(campaigns[campaignId].currentAmount, amount);
-        campaigns[campaignId].donorCount = FHE.add(campaigns[campaignId].donorCount, FHE.asEuint8(1));
+        campaigns[campaignId].currentAmount = FHE.add(campaigns[campaignId].currentAmount, internalAmount);
+        campaigns[campaignId].donorCount = FHE.add(campaigns[campaignId].donorCount, FHE.asEuint32(1));
         
         emit DonationMade(donationId, campaignId, msg.sender, 0); // Amount will be decrypted off-chain
         return donationId;
@@ -118,8 +122,8 @@ contract CharityNexus is SepoliaConfig {
     
     function submitImpactReport(
         uint256 campaignId,
-        euint8 beneficiariesReached,
-        euint8 fundsUtilized,
+        euint32 beneficiariesReached,
+        euint32 fundsUtilized,
         string memory reportHash
     ) public returns (uint256) {
         require(campaigns[campaignId].organizer == msg.sender, "Only organizer can submit report");
@@ -128,7 +132,7 @@ contract CharityNexus is SepoliaConfig {
         uint256 reportId = reportCounter++;
         
         impactReports[reportId] = ImpactReport({
-            reportId: FHE.asEuint8(0), // Will be set properly later
+            reportId: FHE.asEuint32(0), // Will be set properly later
             beneficiariesReached: beneficiariesReached,
             fundsUtilized: fundsUtilized,
             isVerified: false,
@@ -149,7 +153,7 @@ contract CharityNexus is SepoliaConfig {
         emit CampaignVerified(campaignId, isVerified);
     }
     
-    function updateReputation(address user, euint8 reputation) public {
+    function updateReputation(address user, euint32 reputation) public {
         require(msg.sender == verifier, "Only verifier can update reputation");
         require(user != address(0), "Invalid user address");
         

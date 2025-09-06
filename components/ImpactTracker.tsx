@@ -76,7 +76,7 @@ export default function ImpactTracker() {
               type="number"
               value={campaignId}
               onChange={(e) => setCampaignId(e.target.value)}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
               placeholder="Enter Campaign ID"
             />
             <button

@@ -1,5 +1,5 @@
 // Contract configuration and ABI
-export const CHARITY_NEXUS_ADDRESS = (process.env['NEXT_PUBLIC_CHARITY_NEXUS_ADDRESS'] || "0x3668E297A5A51279186aD0981d65C3Da57F18924") as `0x${string}`;
+export const CHARITY_NEXUS_ADDRESS = (process.env['NEXT_PUBLIC_CHARITY_NEXUS_ADDRESS'] || "0xC339D8Fd330979E50D7e8D7Ce5f78F7D380668c7") as `0x${string}`;
 
 export const CHARITY_NEXUS_ABI = [
   {
@@ -145,9 +145,9 @@ export const CHARITY_NEXUS_ABI = [
         "type": "string"
       },
       {
-        "internalType": "uint32",
+        "internalType": "uint256",
         "name": "_targetAmount",
-        "type": "uint32"
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -174,9 +174,14 @@ export const CHARITY_NEXUS_ABI = [
         "type": "uint256"
       },
       {
-        "internalType": "euint8",
+        "internalType": "externalEuint32",
         "name": "amount",
         "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "inputProof",
+        "type": "bytes"
       }
     ],
     "name": "makeDonation",

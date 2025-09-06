@@ -3,14 +3,11 @@
 import { useState } from "react";
 import { useAccount, useContractWrite } from "wagmi";
 import { CHARITY_NEXUS_ADDRESS, CHARITY_NEXUS_ABI } from "../lib/contracts";
+import SuccessModal from "./SuccessModal";
 
 export default function CreateCampaign() {
   const { address } = useAccount();
-  const { write } = useContractWrite({
-    address: CHARITY_NEXUS_ADDRESS,
-    abi: CHARITY_NEXUS_ABI,
-    functionName: "createCampaign",
-  });
+  const { writeContractAsync: write } = useContractWrite();
   
   const [formData, setFormData] = useState({
     name: "",
@@ -18,6 +15,9 @@ export default function CreateCampaign() {
     targetAmount: "",
     duration: "",
   });
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,23 +27,27 @@ export default function CreateCampaign() {
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      // Note: For FHE implementation, values need to be encrypted
-      // For now, we'll use placeholder values that fit within euint8 (0-255)
-      // In production, you would encrypt these values using FHE client library
-      const targetAmount = Math.min(255, Math.max(1, parseInt(formData.targetAmount) / 1000)); // Scale down to fit euint8
+      // Use target amount directly as uint256 (in USD cents for precision)
+      const targetAmountInCents = BigInt(parseInt(formData.targetAmount) * 100); // Convert USD to cents
       const durationInSeconds = parseInt(formData.duration) * 24 * 60 * 60; // Convert days to seconds
 
       await write({
+        address: CHARITY_NEXUS_ADDRESS,
+        abi: CHARITY_NEXUS_ABI,
+        functionName: "createCampaign",
         args: [
           formData.name,
           formData.description,
-          targetAmount, // This will be encrypted as euint8 in the contract
+          targetAmountInCents, // Using cents for reasonable uint256 range
           BigInt(durationInSeconds),
         ],
       });
 
-      alert("Campaign created successfully!");
+      // Show success modal instead of alert
+      setShowSuccessModal(true);
       setFormData({
         name: "",
         description: "",
@@ -53,6 +57,8 @@ export default function CreateCampaign() {
     } catch (error) {
       console.error("Error creating campaign:", error);
       alert("Failed to create campaign");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -80,7 +86,7 @@ export default function CreateCampaign() {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
               placeholder="e.g., Clean Water Initiative"
               required
             />
@@ -95,7 +101,7 @@ export default function CreateCampaign() {
               value={formData.description}
               onChange={handleChange}
               rows={4}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
               placeholder="Describe your campaign goals, impact, and how funds will be used..."
               required
             />
@@ -111,7 +117,7 @@ export default function CreateCampaign() {
                 name="targetAmount"
                 value={formData.targetAmount}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
                 placeholder="e.g., 50000"
                 min="1000"
                 max="255000"
@@ -131,7 +137,7 @@ export default function CreateCampaign() {
                 name="duration"
                 value={formData.duration}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
                 placeholder="e.g., 30"
                 min="1"
                 max="365"
@@ -142,9 +148,17 @@ export default function CreateCampaign() {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-pink-500 to-red-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-pink-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-pink-500 to-red-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-pink-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            🎯 Create Campaign
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                Creating Campaign...
+              </div>
+            ) : (
+              "🎯 Create Campaign"
+            )}
           </button>
         </form>
 
@@ -166,6 +180,20 @@ export default function CreateCampaign() {
           </ul>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Campaign Created Successfully!"
+        message={`Your campaign "${formData.name || 'New Campaign'}" has been created and is now live on the blockchain. Supporters can now start making donations to help achieve your goal.`}
+        icon="🎉"
+        actionText="View Campaigns"
+        onAction={() => {
+          setShowSuccessModal(false);
+          // You could add navigation here if needed
+        }}
+      />
     </div>
   );
 }

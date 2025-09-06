@@ -27,8 +27,7 @@
       "./typechain-types"
     ],
     "types": [
-      "node",
-      "mocha"
+      "node"
     ],
     "lib": [
       "dom",

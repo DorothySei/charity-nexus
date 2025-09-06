@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-const CHARITY_NEXUS_ADDRESS = "0x4630b088E2a6013527Bd9A68aB2c0ceb1a06F18F";
+const CHARITY_NEXUS_ADDRESS = "0x24B7B02B50e052d790A13B6488324bfa073da643";
 const SEPOLIA_RPC = "https://1rpc.io/sepolia";
 
 async function checkVerifier() {
