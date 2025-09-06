@@ -30,9 +30,9 @@ export default function CreateCampaign() {
     setIsLoading(true);
 
     try {
-      // Use target amount as uint32 (in USD cents for precision)
-      const targetAmountInCents = parseInt(formData.targetAmount) * 100; // Convert USD to cents
-      const durationInSeconds = parseInt(formData.duration) * 24 * 60 * 60; // Convert days to seconds
+      // Use target amount as uint256 (in USD cents for precision)
+      const targetAmountInCents = BigInt(parseInt(formData.targetAmount) * 100); // Convert USD to cents
+      const durationInSeconds = BigInt(parseInt(formData.duration) * 24 * 60 * 60); // Convert days to seconds
 
       await write({
         address: CHARITY_NEXUS_ADDRESS,
@@ -41,8 +41,8 @@ export default function CreateCampaign() {
         args: [
           formData.name,
           formData.description,
-          targetAmountInCents, // uint32 type for target amount
-          BigInt(durationInSeconds),
+          targetAmountInCents, // uint256 type for target amount
+          durationInSeconds,
         ],
       });
 

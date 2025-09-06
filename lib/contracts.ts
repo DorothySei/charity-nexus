@@ -141,13 +141,13 @@ export const CHARITY_NEXUS_ABI = [
       },
       {
         "internalType": "string",
-        "name": "_description",
+        "name": "_desc",
         "type": "string"
       },
       {
-        "internalType": "uint32",
-        "name": "_targetAmount",
-        "type": "uint32"
+        "internalType": "uint256",
+        "name": "_fundingGoal",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
