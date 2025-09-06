@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import CampaignList from "../components/CampaignList";
+import RealCampaignList from "../components/RealCampaignList";
 import CreateCampaign from "../components/CreateCampaign";
 import DonationForm from "../components/DonationForm";
 import ImpactTracker from "../components/ImpactTracker";
-import WalletTest from "../components/WalletTest";
-import SimpleWalletTest from "../components/SimpleWalletTest";
 import RpcErrorHandler from "../components/RpcErrorHandler";
 
 export default function Home() {
@@ -99,37 +97,15 @@ export default function Home() {
             >
               📊 Impact Tracker
             </button>
-            <button
-              onClick={() => setActiveTab("wallet")}
-              className={`px-6 py-2 rounded-md font-medium transition-colors ${
-                activeTab === "wallet"
-                  ? "bg-pink-500 text-white"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              🔗 Wallet Test
-            </button>
-            <button
-              onClick={() => setActiveTab("simple-wallet")}
-              className={`px-6 py-2 rounded-md font-medium transition-colors ${
-                activeTab === "simple-wallet"
-                  ? "bg-pink-500 text-white"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              🔗 简单钱包测试
-            </button>
           </div>
         </div>
 
         {/* Tab Content */}
         <div className="space-y-8">
-          {activeTab === "campaigns" && <CampaignList />}
+          {activeTab === "campaigns" && <RealCampaignList />}
           {activeTab === "create" && <CreateCampaign />}
           {activeTab === "donate" && <DonationForm />}
           {activeTab === "impact" && <ImpactTracker />}
-          {activeTab === "wallet" && <WalletTest />}
-          {activeTab === "simple-wallet" && <SimpleWalletTest />}
         </div>
       </div>
 
