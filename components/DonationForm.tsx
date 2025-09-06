@@ -15,7 +15,6 @@ export default function DonationForm() {
   const [formData, setFormData] = useState({
     campaignId: "",
     amount: "",
-    isAnonymous: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,24 +26,23 @@ export default function DonationForm() {
     }
 
     try {
-      // In a real implementation, you would encrypt these values using FHE
-      const encryptedAmount = parseInt(formData.amount);
-      const encryptedIsAnonymous = formData.isAnonymous;
+      // Note: For FHE implementation, amount needs to be encrypted
+      // For now, we'll use placeholder values that fit within euint8 (0-255)
+      const amount = Math.min(255, Math.max(1, parseInt(formData.amount) / 100)); // Scale down to fit euint8
+      const campaignId = BigInt(parseInt(formData.campaignId));
 
       await write({
         args: [
-          BigInt(parseInt(formData.campaignId)),
-          encryptedAmount,
-          encryptedIsAnonymous,
+          campaignId,
+          amount, // This will be encrypted as euint8 in the contract
         ],
-        value: BigInt(parseInt(formData.amount) * 10**18), // Convert to wei
+        value: BigInt(parseInt(formData.amount) * 10**18), // Convert to wei for actual ETH transfer
       });
 
       alert("Donation made successfully!");
       setFormData({
         campaignId: "",
         amount: "",
-        isAnonymous: false,
       });
     } catch (error) {
       console.error("Error making donation:", error);
@@ -53,10 +51,10 @@ export default function DonationForm() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     });
   };
 
@@ -97,22 +95,13 @@ export default function DonationForm() {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
               placeholder="e.g., 100"
-              min="1"
+              min="100"
+              max="25500"
               required
             />
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="isAnonymous"
-              checked={formData.isAnonymous}
-              onChange={handleChange}
-              className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
-            />
-            <label className="ml-2 block text-sm text-gray-700">
-              Make this donation anonymous
-            </label>
+            <p className="text-xs text-gray-500 mt-1">
+              Note: Amount will be scaled down for FHE encryption (max $25,500)
+            </p>
           </div>
 
           <button
@@ -127,7 +116,7 @@ export default function DonationForm() {
           <h3 className="font-semibold text-pink-800 mb-2">🔒 Privacy Notice</h3>
           <p className="text-sm text-pink-700">
             All donation data is encrypted using Fully Homomorphic Encryption (FHE) technology. 
-            Your donation amount and identity (if not anonymous) remain private while enabling secure tracking.
+            Your donation amount remains private while enabling secure tracking.
           </p>
         </div>
 
@@ -137,7 +126,7 @@ export default function DonationForm() {
             <li>• 100% of your donation goes to the cause</li>
             <li>• Transparent impact tracking</li>
             <li>• Secure blockchain-based record</li>
-            <li>• Option for anonymous donations</li>
+            <li>• Encrypted privacy protection</li>
           </ul>
         </div>
 

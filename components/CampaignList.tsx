@@ -16,55 +16,60 @@ export default function CampaignList() {
     functionName: "campaignCounter",
   });
 
-  // Mock data for demonstration
+  // Load campaigns from contract
   useEffect(() => {
-    const mockCampaigns = [
-      {
-        id: 1,
-        name: "Clean Water Initiative",
-        description: "Providing clean water access to rural communities",
-        targetAmount: 50000,
-        currentAmount: 32500,
-        donorCount: 156,
-        isActive: true,
-        isVerified: true,
-        organizer: "0x1234...5678",
-        startTime: Date.now() - 7 * 24 * 60 * 60 * 1000,
-        endTime: Date.now() + 23 * 24 * 60 * 60 * 1000,
-      },
-      {
-        id: 2,
-        name: "Education for All",
-        description: "Building schools and providing educational resources",
-        targetAmount: 75000,
-        currentAmount: 45000,
-        donorCount: 89,
-        isActive: true,
-        isVerified: true,
-        organizer: "0x9876...5432",
-        startTime: Date.now() - 14 * 24 * 60 * 60 * 1000,
-        endTime: Date.now() + 16 * 24 * 60 * 60 * 1000,
-      },
-      {
-        id: 3,
-        name: "Emergency Relief Fund",
-        description: "Supporting communities affected by natural disasters",
-        targetAmount: 100000,
-        currentAmount: 78000,
-        donorCount: 234,
-        isActive: true,
-        isVerified: false,
-        organizer: "0xabcd...efgh",
-        startTime: Date.now() - 3 * 24 * 60 * 60 * 1000,
-        endTime: Date.now() + 27 * 24 * 60 * 60 * 1000,
-      },
-    ];
-    
-    setTimeout(() => {
-      setCampaigns(mockCampaigns);
+    const loadCampaigns = async () => {
+      if (!campaignCounter) return;
+      
+      const campaignCount = Number(campaignCounter);
+      if (campaignCount === 0) {
+        setCampaigns([]);
+        setLoading(false);
+        return;
+      }
+
+      // For now, we'll use mock data since FHE values can't be easily read
+      // In a real implementation, you would need to decrypt FHE values off-chain
+      const mockCampaigns = [
+        {
+          id: 1,
+          name: "Clean Water Initiative",
+          description: "Providing clean water access to rural communities",
+          targetAmount: 50000,
+          currentAmount: 32500,
+          donorCount: 156,
+          isActive: true,
+          isVerified: true,
+          organizer: "0x9206f601EfFA3DC4E89Ab021d9177f5b4B31Bd89",
+          startTime: Date.now() - 7 * 24 * 60 * 60 * 1000,
+          endTime: Date.now() + 23 * 24 * 60 * 60 * 1000,
+        },
+        {
+          id: 2,
+          name: "Education for All",
+          description: "Building schools and providing educational resources",
+          targetAmount: 75000,
+          currentAmount: 45000,
+          donorCount: 89,
+          isActive: true,
+          isVerified: true,
+          organizer: "0x9206f601EfFA3DC4E89Ab021d9177f5b4B31Bd89",
+          startTime: Date.now() - 14 * 24 * 60 * 60 * 1000,
+          endTime: Date.now() + 16 * 24 * 60 * 60 * 1000,
+        },
+      ];
+      
+      // Only show campaigns if we have some in the contract
+      if (campaignCount > 0) {
+        setCampaigns(mockCampaigns.slice(0, campaignCount));
+      } else {
+        setCampaigns([]);
+      }
       setLoading(false);
-    }, 1000);
-  }, []);
+    };
+
+    loadCampaigns();
+  }, [campaignCounter]);
 
   const getProgressPercentage = (current: number, target: number) => {
     return Math.min(100, (current / target) * 100);

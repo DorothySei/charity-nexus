@@ -28,15 +28,17 @@ export default function CreateCampaign() {
     }
 
     try {
-      // In a real implementation, you would encrypt these values using FHE
-      const encryptedTargetAmount = parseInt(formData.targetAmount);
+      // Note: For FHE implementation, values need to be encrypted
+      // For now, we'll use placeholder values that fit within euint8 (0-255)
+      // In production, you would encrypt these values using FHE client library
+      const targetAmount = Math.min(255, Math.max(1, parseInt(formData.targetAmount) / 1000)); // Scale down to fit euint8
       const durationInSeconds = parseInt(formData.duration) * 24 * 60 * 60; // Convert days to seconds
 
       await write({
         args: [
           formData.name,
           formData.description,
-          encryptedTargetAmount,
+          targetAmount, // This will be encrypted as euint8 in the contract
           BigInt(durationInSeconds),
         ],
       });
@@ -111,9 +113,13 @@ export default function CreateCampaign() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 placeholder="e.g., 50000"
-                min="1"
+                min="1000"
+                max="255000"
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Note: Amount will be scaled down for FHE encryption (max $255,000)
+              </p>
             </div>
             
             <div>
