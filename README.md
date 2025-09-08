@@ -6,6 +6,7 @@
 Charity Nexus is a blockchain-based charity platform that uses FHEVM (Fully Homomorphic Encryption for EVM) technology to enable privacy-preserving donations and impact tracking.
 
 🌐 **Live Demo**: [https://charity-nexus.vercel.app/](https://charity-nexus.vercel.app/)
+   **Video**:[https://github.com/DorothySei/charity-nexus/blob/main/charity-nexus.mov](https://github.com/DorothySei/charity-nexus/blob/main/charity-nexus.mov)
 
 ## 🚀 Features
 
